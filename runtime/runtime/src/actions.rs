@@ -34,11 +34,16 @@ use near_runtime_configs::AccountCreationConfig;
 use near_vm_errors::{CompilationError, FunctionCallError};
 use near_vm_runner::VMError;
 
+#[cfg(feature = "delay_detector")]
+use delay_detector::DelayDetector;
+
 pub(crate) fn get_code_with_cache(
     state_update: &TrieUpdate,
     account_id: &AccountId,
     account: &Account,
 ) -> Result<Option<Arc<ContractCode>>, StorageError> {
+    #[cfg(feature = "delay_detector")]
+    let _d = DelayDetector::new("get_code_with_cache".into());
     debug!(target:"runtime", "Calling the contract at account {}", account_id);
     let code_hash = account.code_hash;
     let code = || get_code(state_update, account_id, Some(code_hash));
@@ -60,6 +65,8 @@ pub(crate) fn action_function_call(
     is_last_action: bool,
     epoch_info_provider: &dyn EpochInfoProvider,
 ) -> Result<(), RuntimeError> {
+    #[cfg(feature = "delay_detector")]
+    let mut d = DelayDetector::new("action_function_call".into());
     let code = match get_code_with_cache(state_update, account_id, &account) {
         Ok(Some(code)) => code,
         Ok(None) => {
@@ -73,6 +80,9 @@ pub(crate) fn action_function_call(
             return Err(e.into());
         }
     };
+
+    #[cfg(feature = "delay_detector")]
+    d.snapshot("after get code");
 
     if account.amount.checked_add(function_call.deposit).is_none() {
         return Err(StorageError::StorageInconsistentState(
@@ -104,6 +114,9 @@ pub(crate) fn action_function_call(
         *action_hash,
         apply_state.random_seed,
     );
+
+    #[cfg(feature = "delay_detector")]
+    d.snapshot("before starting vm runner");
 
     let context = VMContext {
         current_account_id: account_id.clone(),
@@ -156,6 +169,8 @@ pub(crate) fn action_function_call(
         }
         None => true,
     };
+    #[cfg(feature = "delay_detector")]
+    d.snapshot("after running vm");
     if let Some(outcome) = outcome {
         result.gas_burnt = safe_add_gas(result.gas_burnt, outcome.burnt_gas)?;
         result.gas_burnt_for_function_call =

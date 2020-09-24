@@ -34,6 +34,9 @@ use near_vm_logic::ReturnData;
 #[cfg(feature = "costs_counting")]
 pub use near_vm_runner::EXT_COSTS_COUNTER;
 
+#[cfg(feature = "delay_detector")]
+use delay_detector::DelayDetector;
+
 use crate::actions::*;
 use crate::balance_checker::check_balance;
 use crate::config::{
@@ -1095,6 +1098,8 @@ impl Runtime {
         transactions: &[SignedTransaction],
         epoch_info_provider: &dyn EpochInfoProvider,
     ) -> Result<ApplyResult, RuntimeError> {
+        #[cfg(feature = "delay_detector")]
+        let mut d = DelayDetector::new("apply".into());
         let trie = Rc::new(trie);
         let initial_state = TrieUpdate::new(trie.clone(), root);
         let mut state_update = TrieUpdate::new(trie.clone(), root);
@@ -1108,6 +1113,8 @@ impl Runtime {
                 &mut stats,
             )?;
         }
+        #[cfg(feature = "delay_detector")]
+        d.snapshot("after updating validator accounts");
 
         let mut outgoing_receipts = Vec::new();
         let mut validator_proposals = vec![];
@@ -1132,6 +1139,9 @@ impl Runtime {
 
             outcomes.push(outcome_with_id);
         }
+
+        #[cfg(feature = "delay_detector")]
+        d.snapshot("after updating process transactions");
 
         let mut delayed_receipts_indices: DelayedReceiptIndices =
             get(&state_update, &TrieKey::DelayedReceiptIndices)?.unwrap_or_default();
@@ -1161,6 +1171,9 @@ impl Runtime {
             )?;
             Ok(())
         };
+
+        #[cfg(feature = "delay_detector")]
+        d.snapshot("after processing receipts");
 
         let gas_limit = apply_state.gas_limit.unwrap_or(Gas::max_value());
 
