@@ -499,7 +499,7 @@ pub struct PartialEncodedChunkV1 {
     pub receipts: Vec<ReceiptProof>,
 }
 
-#[derive(DeepSizeOf)]
+#[derive(Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct PartialEncodedChunkWithArcReceipts {
     pub header: ShardChunkHeader,
     pub parts: Vec<PartialEncodedChunkPart>,
