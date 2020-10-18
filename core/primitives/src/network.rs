@@ -3,6 +3,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::DeepSizeOf;
 use serde::{Deserialize, Serialize};
 
 use near_crypto::{KeyType, PublicKey, SecretKey, Signature};
@@ -11,7 +12,9 @@ use crate::hash::{hash, CryptoHash};
 use crate::types::{AccountId, EpochId};
 
 /// Peer id is the public key.
-#[derive(BorshSerialize, BorshDeserialize, Clone, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    BorshSerialize, BorshDeserialize, Clone, Eq, PartialOrd, Ord, Serialize, Deserialize, DeepSizeOf,
+)]
 pub struct PeerId(pub PublicKey);
 
 impl PeerId {
@@ -75,7 +78,7 @@ impl fmt::Debug for PeerId {
 }
 
 /// Account announcement information
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 pub struct AnnounceAccount {
     /// AccountId to be announced.
     pub account_id: AccountId,

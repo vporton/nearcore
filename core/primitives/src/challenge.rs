@@ -1,6 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 
+use deepsize::DeepSizeOf;
 use near_crypto::Signature;
 
 use crate::hash::{hash, CryptoHash};
@@ -12,11 +13,11 @@ use crate::validator_signer::ValidatorSigner;
 /// Serialized TrieNodeWithSize
 pub type StateItem = Vec<u8>;
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct PartialState(pub Vec<StateItem>);
 
 /// Double signed block.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 pub struct BlockDoubleSign {
     pub left_block_header: Vec<u8>,
     pub right_block_header: Vec<u8>,
@@ -29,7 +30,7 @@ impl std::fmt::Display for BlockDoubleSign {
 }
 
 /// Invalid chunk (body of the chunk doesn't match proofs or invalid encoding).
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 pub struct ChunkProofs {
     /// Encoded block header that contains invalid chunk.
     pub block_header: Vec<u8>,
@@ -43,14 +44,14 @@ pub struct ChunkProofs {
 /// `Decoded` is used to avoid re-encoding an already decoded chunk to construct a challenge.
 /// `Encoded` is still needed in case a challenge challenges an invalid encoded chunk that can't be
 /// decoded.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 pub enum MaybeEncodedShardChunk {
     Encoded(EncodedShardChunk),
     Decoded(ShardChunk),
 }
 
 /// Doesn't match post-{state root, outgoing receipts, gas used, etc} results after applying previous chunk.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 pub struct ChunkState {
     /// Encoded prev block header.
     pub prev_block_header: Vec<u8>,
@@ -68,7 +69,7 @@ pub struct ChunkState {
     pub partial_state: PartialState,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 // TODO(#1313): Use Box
 #[allow(clippy::large_enum_variant)]
 pub enum ChallengeBody {
@@ -77,7 +78,7 @@ pub enum ChallengeBody {
     ChunkState(ChunkState),
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, Debug, DeepSizeOf)]
 #[borsh_init(init)]
 pub struct Challenge {
     pub body: ChallengeBody,
@@ -101,7 +102,17 @@ impl Challenge {
 
 pub type Challenges = Vec<Challenge>;
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct SlashedValidator {
     pub account_id: AccountId,
     pub is_double_sign: bool,

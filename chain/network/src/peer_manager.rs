@@ -13,6 +13,7 @@ use actix::{
     Recipient, Running, StreamHandler, SyncArbiter, SyncContext, SystemService, WrapFuture,
 };
 use chrono::Utc;
+use deepsize::DeepSizeOf;
 use futures::task::Poll;
 use futures::{future, Stream, StreamExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -83,6 +84,7 @@ macro_rules! unwrap_or_error(($obj: expr, $error: expr) => (match $obj {
 }));
 
 /// Contains information relevant to an active peer.
+#[derive(DeepSizeOf)]
 struct ActivePeer {
     addr: Addr<Peer>,
     full_peer_info: FullPeerInfo,
@@ -100,6 +102,7 @@ struct ActivePeer {
     peer_type: PeerType,
 }
 
+#[derive(DeepSizeOf)]
 struct EdgeVerifier {}
 
 impl Actor for EdgeVerifier {
@@ -115,6 +118,7 @@ impl Handler<EdgeList> for EdgeVerifier {
 }
 
 /// Actor that manages peers connections.
+#[derive(DeepSizeOf)]
 pub struct PeerManagerActor {
     /// Networking configuration.
     config: NetworkConfig,
@@ -186,6 +190,14 @@ impl PeerManagerActor {
             metric_recorder,
             txns_since_last_block,
         })
+    }
+
+    fn log_mem_usage(&self, ctx: &mut Context<Self>) {
+        ctx.run_later(Duration::from_secs(10), move |act, ctx| {
+            info!("PIOTR4 log_mem_usage");
+            info!("PIOTR4 PeerManagerActor: {}", act.deep_size_of());
+            act.log_mem_usage(ctx);
+        });
     }
 
     fn num_active_peers(&self) -> usize {
@@ -1125,6 +1137,9 @@ impl Actor for PeerManagerActor {
         // Periodically ping all peers to determine latencies between pair of peers.
         #[cfg(feature = "metric_recorder")]
         self.ping_all_peers(ctx);
+
+        self.log_mem_usage(ctx);
+        memory_tracker::allocator::enable_tracking("PeerManager");
     }
 
     /// Try to gracefully disconnect from active peers.

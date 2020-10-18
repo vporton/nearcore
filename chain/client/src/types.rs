@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use actix::Message;
 use chrono::{DateTime, Utc};
+use deepsize::DeepSizeOf;
 use serde::{Deserialize, Serialize};
 
 use near_network::types::{AccountOrPeerIdOrHash, KnownProducer};
@@ -75,7 +76,7 @@ impl From<String> for Error {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, DeepSizeOf)]
 pub struct DownloadStatus {
     pub start_time: DateTime<Utc>,
     pub prev_update_time: DateTime<Utc>,
@@ -101,7 +102,7 @@ impl Clone for DownloadStatus {
 }
 
 /// Various status of syncing a specific shard.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, DeepSizeOf)]
 pub enum ShardSyncStatus {
     StateDownloadHeader,
     StateDownloadParts,
@@ -109,14 +110,14 @@ pub enum ShardSyncStatus {
     StateDownloadComplete,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, DeepSizeOf)]
 pub struct ShardSyncDownload {
     pub downloads: Vec<DownloadStatus>,
     pub status: ShardSyncStatus,
 }
 
 /// Various status sync can be in, whether it's fast sync or archival.
-#[derive(Clone, Debug, strum::AsStaticStr)]
+#[derive(Clone, Debug, strum::AsStaticStr, DeepSizeOf)]
 pub enum SyncStatus {
     /// Initial state. Not enough peers to do anything yet.
     AwaitingPeers,

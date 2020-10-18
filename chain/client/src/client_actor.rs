@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 use actix::{Actor, Addr, Arbiter, AsyncContext, Context, Handler};
 use chrono::Duration as OldDuration;
 use chrono::{DateTime, Utc};
+use deepsize::DeepSizeOf;
 use log::{debug, error, info, trace, warn};
 
 #[cfg(feature = "delay_detector")]
@@ -63,6 +64,7 @@ const BLOCK_HORIZON: u64 = 500;
 /// the current `head`
 const HEAD_STALL_MULTIPLIER: u32 = 4;
 
+#[derive(DeepSizeOf)]
 pub struct ClientActor {
     /// Adversarial controls
     #[cfg(feature = "adversarial")]
@@ -134,7 +136,7 @@ impl ClientActor {
         )?;
 
         let now = Utc::now();
-        Ok(ClientActor {
+        let actor = ClientActor {
             #[cfg(feature = "adversarial")]
             adv,
             client,
@@ -158,7 +160,9 @@ impl ClientActor {
             doomslug_timer_next_attempt: now,
             chunk_request_retry_next_attempt: now,
             sync_started: false,
-        })
+        };
+        info!("PIOTR3 {}", actor.deep_size_of());
+        Ok(actor)
     }
 }
 
@@ -182,6 +186,10 @@ impl Actor for ClientActor {
 
         // Start periodic logging of current state of the client.
         self.log_summary(ctx);
+
+        self.log_mem_usage(ctx);
+
+        memory_tracker::allocator::enable_tracking("ClientActor");
     }
 }
 
@@ -1303,6 +1311,44 @@ impl ClientActor {
 
         ctx.run_later(wait_period, move |act, ctx| {
             act.sync(ctx);
+        });
+    }
+
+    fn log_mem_usage(&self, ctx: &mut Context<Self>) {
+        ctx.run_later(Duration::from_secs(10), move |act, ctx| {
+            info!("PIOTR4 log_mem_usage");
+            info!("PIOTR4 ClientActor: {}", act.deep_size_of());
+            act.log_mem_usage(ctx);
+
+            let stats = act.client.chain.store().store().get_stats();
+
+            let block_cache_usage = stats.get("rocksdb.block-cache-usage").unwrap_or(&0);
+            let estimate_table_readers_mem =
+                stats.get("rocksdb.estimate-table-readers-mem").unwrap_or(&0);
+            let cur_size_all_mem_tables =
+                stats.get("rocksdb.cur-size-all-mem-tables").unwrap_or(&0);
+            let block_cache_pinned_usage =
+                stats.get("rocksdb.block-cache-pinned-usage").unwrap_or(&0);
+            let total_memory = block_cache_usage
+                + estimate_table_readers_mem
+                + cur_size_all_mem_tables
+                + block_cache_pinned_usage;
+
+            let block_cache_capacity = stats.get("rocksdb.block-cache-capacity").unwrap_or(&0);
+
+            info!(
+                "RocksDB: {{ \
+                total: {}, cache: {}, readers: {}, \
+                memtables: {}, pinned: {}, \
+                cache-capacity: {} \
+            }}",
+                total_memory,
+                block_cache_capacity,
+                estimate_table_readers_mem,
+                cur_size_all_mem_tables,
+                block_cache_pinned_usage,
+                block_cache_usage
+            );
         });
     }
 

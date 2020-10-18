@@ -7,6 +7,7 @@ use std::sync::Arc;
 use borsh::{BorshDeserialize, BorshSerialize};
 use cached::{Cached, SizedCache};
 use chrono::Utc;
+use deepsize::DeepSizeOf;
 use tracing::debug;
 
 use near_primitives::block::{Approval, Tip};
@@ -315,6 +316,7 @@ pub trait ChainStoreAccess {
 }
 
 /// All chain-related database operations.
+#[derive(DeepSizeOf)]
 pub struct ChainStore {
     store: Arc<Store>,
     /// Genesis block height.

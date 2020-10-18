@@ -4,6 +4,8 @@ use near_primitives::network::PeerId;
 use std::collections::btree_map;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
+use deepsize::DeepSizeOf;
+
 type Time = u64;
 type Size = u64;
 
@@ -42,6 +44,7 @@ type Size = u64;
 /// - If the cache is not at full capacity, all new records will be stored.
 /// - If a peer try to abuse the system, it will be able to allocate at most
 ///     $capacity / number_of_active_connections$ entries.
+#[derive(DeepSizeOf)]
 pub struct RouteBackCache {
     /// Maximum number of records allowed in the cache.
     capacity: u64,

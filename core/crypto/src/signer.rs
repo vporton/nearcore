@@ -4,9 +4,10 @@ use std::sync::Arc;
 use crate::key_conversion::convert_secret_key;
 use crate::key_file::KeyFile;
 use crate::{KeyType, PublicKey, SecretKey, Signature};
+use deepsize::DeepSizeOf;
 
 /// Generic signer trait, that can sign with some subset of supported curves.
-pub trait Signer: Sync + Send {
+pub trait Signer: Sync + Send + DeepSizeOf {
     fn public_key(&self) -> PublicKey;
     fn sign(&self, data: &[u8]) -> Signature;
 
@@ -23,6 +24,7 @@ pub trait Signer: Sync + Send {
 }
 
 // Signer that returns empty signature. Used for transaction testing.
+#[derive(DeepSizeOf)]
 pub struct EmptySigner {}
 
 impl Signer for EmptySigner {
@@ -40,7 +42,7 @@ impl Signer for EmptySigner {
 }
 
 /// Signer that keeps secret key in memory.
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct InMemorySigner {
     pub account_id: String,
     pub public_key: PublicKey,

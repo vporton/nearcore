@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::DeepSizeOf;
 use log::error;
 
 use near_primitives::epoch_manager::{BlockInfo, EpochInfo};
@@ -15,7 +16,7 @@ use crate::EpochManager;
 pub type RngSeed = [u8; 32];
 
 /// Aggregator of information needed for validator computation at the end of the epoch.
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, DeepSizeOf)]
 pub struct EpochInfoAggregator {
     /// Map from validator index to (num_blocks_produced, num_blocks_expected) so far in the given epoch.
     pub block_tracker: HashMap<ValidatorId, ValidatorStats>,

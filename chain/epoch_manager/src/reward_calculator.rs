@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use deepsize::DeepSizeOf;
 use num_rational::Rational;
 use primitive_types::U256;
 
 use near_primitives::types::{AccountId, Balance, BlockChunkValidatorStats};
 use near_primitives::version::{ProtocolVersion, ENABLE_INFLATION_PROTOCOL_VERSION};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, DeepSizeOf)]
 pub struct RewardCalculator {
     pub max_inflation_rate: Rational,
     pub num_blocks_per_year: u64,

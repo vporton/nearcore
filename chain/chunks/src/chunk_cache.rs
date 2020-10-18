@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use cached::{Cached, SizedCache};
+use deepsize::DeepSizeOf;
 
 use near_primitives::hash::CryptoHash;
 use near_primitives::sharding::{
@@ -13,12 +14,14 @@ const MAX_HEIGHTS_AHEAD: BlockHeightDelta = 5;
 const CHUNK_HEADER_HEIGHT_HORIZON: BlockHeightDelta = 10;
 const NUM_BLOCK_HASH_TO_CHUNK_HEADER: usize = 30;
 
+#[derive(DeepSizeOf)]
 pub struct EncodedChunksCacheEntry {
     pub header: ShardChunkHeader,
     pub parts: HashMap<u64, PartialEncodedChunkPart>,
     pub receipts: HashMap<ShardId, ReceiptProof>,
 }
 
+#[derive(DeepSizeOf)]
 pub struct EncodedChunksCache {
     largest_seen_height: BlockHeight,
 

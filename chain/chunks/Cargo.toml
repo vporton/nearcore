@@ -5,6 +5,7 @@ authors = ["Near Inc <hello@nearprotocol.com>"]
 edition = "2018"
 
 [dependencies]
+deepsize = { path = "../../deepsize" }
 actix = "0.9"
 futures = "0.3"
 rand = "0.7"

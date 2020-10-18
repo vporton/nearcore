@@ -5,6 +5,7 @@ authors = ["Near Inc <hello@nearprotocol.com>"]
 edition = "2018"
 
 [dependencies]
+deepsize = { path = "../../deepsize" }
 regex = "1"
 bs58 = "0.3"
 base64 = "0.11"

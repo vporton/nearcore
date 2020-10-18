@@ -4,10 +4,11 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
+use deepsize::DeepSizeOf;
 use near_primitives::types::{AccountId, BlockHeightDelta, NumBlocks, NumSeats, ShardId};
 use near_primitives::version::Version;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, DeepSizeOf)]
 pub struct ClientConfig {
     /// Version of the binary.
     pub version: Version,
@@ -78,6 +79,48 @@ pub struct ClientConfig {
     /// Number of threads for ViewClientActor pool.
     pub view_client_threads: usize,
 }
+
+/*
+my_macro! {
+
+pub struct ClientConfig {
+    version: Version,
+    chain_id: String,
+    rpc_addr: String,
+    block_production_tracking_delay: Duration,
+    min_block_production_delay: Duration,
+    max_block_production_delay: Duration,
+    max_block_wait_delay: Duration,
+    reduce_wait_for_missing_block: Duration,
+    skip_sync_wait: bool,
+    sync_check_period: Duration,
+    sync_step_period: Duration,
+    sync_height_threshold: BlockHeightDelta,
+    header_sync_initial_timeout: Duration,
+    header_sync_progress_timeout: Duration,
+    header_sync_stall_ban_timeout: Duration,
+    header_sync_expected_height_per_second: u64,
+    min_num_peers: usize,
+    log_summary_period: Duration,
+    produce_empty_blocks: bool,
+    epoch_length: BlockHeightDelta,
+    num_block_producer_seats: NumSeats,
+    announce_account_horizon: BlockHeightDelta,
+    ttl_account_id_router: Duration,
+    block_fetch_horizon: BlockHeightDelta,
+    state_fetch_horizon: NumBlocks,
+    catchup_step_period: Duration,
+    chunk_request_retry_period: Duration,
+    doosmslug_step_period: Duration,
+    block_header_fetch_horizon: BlockHeightDelta,
+    gc_blocks_limit: NumBlocks,
+    tracked_accounts: Vec<AccountId>,
+    tracked_shards: Vec<ShardId>,
+    archive: bool,
+    view_client_threads: usize,
+}
+
+} */
 
 impl ClientConfig {
     pub fn test(

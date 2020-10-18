@@ -12,8 +12,7 @@ use actix::{
     Actor, ActorContext, ActorFuture, Addr, Arbiter, AsyncContext, Context, ContextFutureSpawner,
     Handler, Recipient, Running, StreamHandler, WrapFuture,
 };
-use tracing::{debug, error, info, trace, warn};
-
+use deepsize::DeepSizeOf;
 use near_metrics;
 use near_primitives::block::GenesisId;
 use near_primitives::hash::CryptoHash;
@@ -23,6 +22,7 @@ use near_primitives::utils::DisplayOption;
 use near_primitives::version::{
     ProtocolVersion, OLDEST_BACKWARD_COMPATIBLE_PROTOCOL_VERSION, PROTOCOL_VERSION,
 };
+use tracing::{debug, error, info, trace, warn};
 
 use crate::codec::{self, bytes_to_peer_message, peer_message_to_bytes, Codec};
 use crate::rate_counter::RateCounter;
@@ -59,6 +59,7 @@ const MAX_PEER_MSG_PER_MIN: u64 = std::u64::MAX;
 const MAX_TXNS_PER_BLOCK_MESSAGE: usize = 1000;
 
 /// Internal structure to keep a circular queue within a tracker with unique hashes.
+#[derive(DeepSizeOf)]
 struct CircularUniqueQueue {
     v: Vec<CryptoHash>,
     index: usize,
@@ -93,6 +94,7 @@ impl CircularUniqueQueue {
 
 /// Keeps track of requests and received hashes of transactions and blocks.
 /// Also keeps track of number of bytes sent and received from this peer to prevent abuse.
+#[derive(DeepSizeOf)]
 pub struct Tracker {
     /// Bytes we've sent.
     sent_bytes: RateCounter,
@@ -141,6 +143,7 @@ impl Tracker {
     }
 }
 
+#[derive(DeepSizeOf)]
 pub struct Peer {
     /// This node's id and address (either listening or socket address).
     pub node_info: PeerInfo,
@@ -195,6 +198,7 @@ impl Peer {
         network_metrics: NetworkMetrics,
         txns_since_last_block: Arc<AtomicUsize>,
     ) -> Self {
+        memory_tracker::allocator::enable_tracking("Peer");
         Peer {
             node_info,
             peer_addr,
@@ -215,6 +219,14 @@ impl Peer {
             network_metrics,
             txns_since_last_block,
         }
+    }
+
+    fn log_mem_usage(&self, ctx: &mut Context<Self>) {
+        ctx.run_later(Duration::from_secs(10), move |act, ctx| {
+            info!("PIOTR4 PeerActor: {}", act.deep_size_of());
+            info!("PIOTR4 get_sanity_val: {}", memory_tracker::allocator::get_sanity_val());
+            act.log_mem_usage(ctx);
+        });
     }
 
     /// Whether the peer is considered abusive due to sending too many messages.
@@ -614,6 +626,9 @@ impl Actor for Peer {
         if self.peer_type == PeerType::Outbound {
             self.send_handshake(ctx);
         }
+
+        self.log_mem_usage(ctx);
+        memory_tracker::allocator::enable_tracking("Peer");
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {

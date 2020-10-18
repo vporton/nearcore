@@ -127,7 +127,7 @@ macro_rules! eq {
 
 macro_rules! value_type {
     ($vis:vis, $ty:ident, $l:literal, $what:literal) => {
-        #[derive(Copy, Clone)]
+        #[derive(Copy, Clone, DeepSizeOf)]
         $vis struct $ty(pub [u8; $l]);
 
         eq!($ty, |a, b| a.0[..] == b.0[..]);

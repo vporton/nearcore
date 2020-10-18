@@ -2,6 +2,7 @@ use std::str;
 use std::time::Instant;
 
 use borsh::BorshSerialize;
+use deepsize::DeepSizeOf;
 use log::debug;
 
 use near_crypto::{KeyType, PublicKey};
@@ -21,6 +22,7 @@ use crate::actions::get_code_with_cache;
 use crate::ext::RuntimeExt;
 use near_primitives::version::ProtocolVersion;
 
+#[derive(DeepSizeOf)]
 pub struct TrieViewer {}
 
 impl TrieViewer {

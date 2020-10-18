@@ -3,6 +3,7 @@ use std::ops::Sub;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use deepsize::DeepSizeOf;
 use serde::Serialize;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -46,7 +47,9 @@ pub const SAVE_PEERS_AFTER_TIME: u64 = 3_600;
 
 /// Information that will be ultimately used to create a new edge.
 /// It contains nonce proposed for the edge with signature from peer.
-#[derive(Clone, BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Debug, Default)]
+#[derive(
+    Clone, BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Debug, Default, DeepSizeOf,
+)]
 pub struct EdgeInfo {
     pub nonce: u64,
     pub signature: Signature,
@@ -70,7 +73,7 @@ pub enum EdgeType {
 
 /// Edge object. Contains information relative to a new edge that is being added or removed
 /// from the network. This is the information that is required
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, Eq, DeepSizeOf)]
 pub struct Edge {
     /// Since edges are not directed `peer0 < peer1` should hold.
     pub peer0: PeerId,
@@ -253,6 +256,7 @@ impl Edge {
     }
 }
 
+#[derive(DeepSizeOf)]
 pub struct RoutingTable {
     /// PeerId associated for every known account id.
     account_peers: SizedCache<AccountId, AnnounceAccount>,
@@ -749,13 +753,13 @@ pub struct ProcessEdgeResult {
     pub schedule_computation: Option<Duration>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, DeepSizeOf)]
 pub struct RoutingTableInfo {
     pub account_peers: HashMap<AccountId, PeerId>,
     pub peer_forwarding: HashMap<PeerId, HashSet<PeerId>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct Graph {
     pub source: PeerId,
     adjacency: HashMap<PeerId, HashSet<PeerId>>,

@@ -1,4 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::DeepSizeOf;
 use near_rpc_error_macro::RpcError;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -14,7 +15,16 @@ pub enum VMError {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum FunctionCallError {
     /// Wasm compilation error
@@ -32,7 +42,16 @@ pub enum FunctionCallError {
 }
 /// A kind of a trap happened during execution of a binary
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum WasmTrap {
     /// An `unreachable` opcode was executed.
@@ -56,7 +75,16 @@ pub enum WasmTrap {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum MethodResolveError {
     MethodEmptyName,
@@ -66,7 +94,16 @@ pub enum MethodResolveError {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum CompilationError {
     CodeDoesNotExist { account_id: String },
@@ -75,7 +112,16 @@ pub enum CompilationError {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 /// Error that can occur while preparing or executing Wasm smart-contract.
 pub enum PrepareError {
@@ -103,7 +149,16 @@ pub enum PrepareError {
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, RpcError,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum HostError {
     /// String encoding is bad UTF-16 sequence
@@ -168,7 +223,9 @@ pub enum HostError {
     Deprecated { method_name: String },
 }
 
-#[derive(Debug, Clone, PartialEq, BorshDeserialize, BorshSerialize, Deserialize, Serialize)]
+#[derive(
+    Debug, Clone, PartialEq, BorshDeserialize, BorshSerialize, Deserialize, Serialize, DeepSizeOf,
+)]
 pub enum VMLogicError {
     HostError(HostError),
     /// Serialized external error from External trait implementation.
@@ -179,7 +236,17 @@ pub enum VMLogicError {
 
 /// An error that is caused by an operation on an inconsistent state.
 /// E.g. a deserialization error or an integer overflow.
-#[derive(Debug, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize, Deserialize, Serialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshDeserialize,
+    BorshSerialize,
+    Deserialize,
+    Serialize,
+    DeepSizeOf,
+)]
 pub enum InconsistentStateError {
     /// Math operation with a value from the state resulted in a integer overflow.
     IntegerOverflow,

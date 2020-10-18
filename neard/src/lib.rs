@@ -1,3 +1,4 @@
+#![feature(thread_id_value)]
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;

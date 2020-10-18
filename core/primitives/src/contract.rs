@@ -1,5 +1,8 @@
 use crate::hash::{hash as sha256, CryptoHash};
 
+use deepsize::DeepSizeOf;
+
+#[derive(DeepSizeOf)]
 pub struct ContractCode {
     pub code: Vec<u8>,
     pub hash: CryptoHash,

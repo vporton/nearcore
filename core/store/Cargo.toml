@@ -5,6 +5,7 @@ authors = ["Near Inc <hello@nearprotocol.com>"]
 edition = "2018"
 
 [dependencies]
+deepsize = { path = "../../deepsize" }
 byteorder = "1.2"
 derive_more = "0.99.3"
 elastic-array = "0.11"
@@ -19,6 +20,7 @@ strum = "0.18"
 strum_macros = "0.18"
 
 borsh = "0.7.1"
+chrono = "0.4"
 
 near-crypto = { path = "../crypto" }
 near-primitives = { path = "../primitives" }

@@ -6,6 +6,8 @@ use near_metrics::{
 use std::collections::HashMap;
 use strum::VariantNames;
 
+use deepsize::DeepSizeOf;
+
 lazy_static! {
     pub static ref PEER_CONNECTIONS_TOTAL: near_metrics::Result<IntGauge> =
         try_create_int_gauge("near_peer_connections_total", "Number of connected peers");
@@ -69,7 +71,7 @@ lazy_static! {
     pub static ref RECEIVED_INFO_ABOUT_ITSELF: near_metrics::Result<IntCounter> = try_create_int_counter("received_info_about_itself", "Number of times a peer tried to connect to itself");
 }
 
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct NetworkMetrics {
     pub peer_messages: HashMap<String, Option<IntCounter>>,
 }

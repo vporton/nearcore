@@ -2,16 +2,17 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
+use deepsize::DeepSizeOf;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::logging::pretty_hash;
 use crate::serialize::{from_base, to_base, BaseDecode};
 
-#[derive(Copy, Clone, PartialOrd, PartialEq, Eq, Ord, derive_more::AsRef)]
+#[derive(Copy, Clone, PartialOrd, PartialEq, Eq, Ord, derive_more::AsRef, DeepSizeOf)]
 #[as_ref(forward)]
 pub struct Digest(pub [u8; 32]);
 
-#[derive(Copy, Clone, PartialOrd, Ord, derive_more::AsRef)]
+#[derive(Copy, Clone, PartialOrd, Ord, derive_more::AsRef, DeepSizeOf)]
 #[as_ref(forward)]
 pub struct CryptoHash(pub Digest);
 

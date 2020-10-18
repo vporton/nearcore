@@ -15,8 +15,11 @@
 use std::collections::VecDeque;
 use std::time::{Duration, SystemTime};
 
+use deepsize::DeepSizeOf;
+
 const MINUTE_IN_MILLIS: u128 = 60_000;
 
+#[derive(DeepSizeOf)]
 struct Entry {
     bytes: u64,
     expiration_timestamp: u128,
@@ -24,6 +27,7 @@ struct Entry {
 
 /// A rate counter tracks number of transfers, the amount of data exchanged and the rate of transfer
 /// over the last minute.
+#[derive(DeepSizeOf)]
 pub struct RateCounter {
     entries: VecDeque<Entry>,
     bytes_sum: u64,

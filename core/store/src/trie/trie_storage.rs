@@ -9,11 +9,12 @@ use near_primitives::hash::CryptoHash;
 use crate::db::refcount::decode_value_with_rc;
 use crate::trie::POISONED_LOCK_ERR;
 use crate::{ColState, StorageError, Store};
+use deepsize::DeepSizeOf;
 use near_primitives::types::ShardId;
 use std::convert::{TryFrom, TryInto};
 use std::io::ErrorKind;
 
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct TrieCache(Arc<Mutex<SizedCache<CryptoHash, Vec<u8>>>>);
 
 impl TrieCache {

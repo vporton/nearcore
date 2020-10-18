@@ -6,6 +6,8 @@ edition = "2018"
 default-run = "neard"
 
 [dependencies]
+jemallocator = { version = "0.3"  }
+deepsize = { path = "../deepsize" }
 actix = "0.9"
 actix-web = { version = "2", features = [ "openssl" ] }
 byteorder = "1.2"
@@ -45,6 +47,7 @@ near-telemetry = { path = "../chain/telemetry" }
 near-epoch-manager = { path = "../chain/epoch_manager" }
 
 delay-detector = { path = "../tools/delay_detector", optional = true }
+memory-tracker = { path = "../memory-tracker" }
 
 [dev-dependencies]
 near-logger-utils = { path = "../test-utils/logger" }

@@ -5,6 +5,7 @@ use std::hash::{Hash, Hasher};
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 
+use deepsize::DeepSizeOf;
 use near_crypto::{PublicKey, Signature};
 
 use crate::account::AccessKey;
@@ -17,7 +18,7 @@ use crate::types::{AccountId, Balance, Gas, Nonce};
 
 pub type LogEntry = String;
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Debug, Clone, DeepSizeOf)]
 pub struct Transaction {
     /// An account on which behalf transaction is signed
     pub signer_id: AccountId,
@@ -43,7 +44,17 @@ impl Transaction {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Debug,
+    Clone,
+    DeepSizeOf,
+)]
 pub enum Action {
     /// Create an (sub)account using a transaction `receiver_id` as an ID for a new account
     /// ID must pass validation rules described here http://nomicon.io/Primitives/Account.html
@@ -75,7 +86,17 @@ impl Action {
 }
 
 /// Create account action
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct CreateAccountAction {}
 
 impl From<CreateAccountAction> for Action {
@@ -85,7 +106,9 @@ impl From<CreateAccountAction> for Action {
 }
 
 /// Deploy contract action
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(
+    BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, DeepSizeOf,
+)]
 pub struct DeployContractAction {
     /// WebAssembly binary
     #[serde(with = "base64_format")]
@@ -106,7 +129,9 @@ impl fmt::Debug for DeployContractAction {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(
+    BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, DeepSizeOf,
+)]
 pub struct FunctionCallAction {
     pub method_name: String,
     #[serde(with = "base64_format")]
@@ -133,7 +158,17 @@ impl fmt::Debug for FunctionCallAction {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct TransferAction {
     #[serde(with = "u128_dec_format_compatible")]
     pub deposit: Balance,
@@ -146,7 +181,17 @@ impl From<TransferAction> for Action {
 }
 
 /// An action which stakes singer_id tokens and setup's validator public key
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct StakeAction {
     /// Amount of tokens to stake.
     #[serde(with = "u128_dec_format_compatible")]
@@ -161,7 +206,17 @@ impl From<StakeAction> for Action {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct AddKeyAction {
     /// A public key which will be associated with an access_key
     pub public_key: PublicKey,
@@ -175,7 +230,17 @@ impl From<AddKeyAction> for Action {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct DeleteKeyAction {
     /// A public key associated with the access_key to be deleted.
     pub public_key: PublicKey,
@@ -187,7 +252,17 @@ impl From<DeleteKeyAction> for Action {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    DeepSizeOf,
+)]
 pub struct DeleteAccountAction {
     pub beneficiary_id: AccountId,
 }
@@ -198,7 +273,7 @@ impl From<DeleteAccountAction> for Action {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Eq, Debug, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Eq, Debug, Clone, DeepSizeOf)]
 #[borsh_init(init)]
 pub struct SignedTransaction {
     pub transaction: Transaction,
@@ -242,7 +317,7 @@ impl Borrow<CryptoHash> for SignedTransaction {
 }
 
 /// The status of execution for a transaction or a receipt.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Eq, Clone, DeepSizeOf)]
 pub enum ExecutionStatus {
     /// The execution is pending or unknown.
     Unknown,
@@ -320,7 +395,7 @@ impl From<ExecutionStatus> for PartialExecutionStatus {
 }
 
 /// Execution outcome for one signed transaction or one receipt.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Clone, Default, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, PartialEq, Clone, Default, Eq, DeepSizeOf)]
 pub struct ExecutionOutcome {
     /// Logs from this transaction or receipt.
     pub logs: Vec<LogEntry>,
@@ -368,7 +443,9 @@ impl fmt::Debug for ExecutionOutcome {
 /// Execution outcome with the identifier.
 /// For a signed transaction, the ID is the hash of the transaction.
 /// For a receipt, the ID is the receipt ID.
-#[derive(PartialEq, Clone, Default, Debug, BorshSerialize, BorshDeserialize, Serialize, Eq)]
+#[derive(
+    PartialEq, Clone, Default, Debug, BorshSerialize, BorshDeserialize, Serialize, Eq, DeepSizeOf,
+)]
 pub struct ExecutionOutcomeWithId {
     /// The transaction hash or the receipt ID.
     pub id: CryptoHash,
@@ -385,7 +462,9 @@ impl ExecutionOutcomeWithId {
 }
 
 /// Execution outcome with path from it to the outcome root and ID.
-#[derive(PartialEq, Clone, Default, Debug, BorshSerialize, BorshDeserialize, Serialize, Eq)]
+#[derive(
+    PartialEq, Clone, Default, Debug, BorshSerialize, BorshDeserialize, Serialize, Eq, DeepSizeOf,
+)]
 pub struct ExecutionOutcomeWithIdAndProof {
     pub proof: MerklePath,
     pub block_hash: CryptoHash,

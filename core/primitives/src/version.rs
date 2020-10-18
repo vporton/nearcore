@@ -1,8 +1,9 @@
 use crate::types::Balance;
+use deepsize::DeepSizeOf;
 use serde::{Deserialize, Serialize};
 
 /// Data structure for semver version and github tag or commit.
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, DeepSizeOf)]
 pub struct Version {
     pub version: String,
     pub build: String,

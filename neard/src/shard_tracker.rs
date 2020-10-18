@@ -3,6 +3,7 @@ use std::io::Cursor;
 use std::sync::{Arc, RwLock};
 
 use byteorder::{LittleEndian, ReadBytesExt};
+use deepsize::DeepSizeOf;
 use log::info;
 
 use near_epoch_manager::EpochManager;
@@ -20,7 +21,7 @@ pub fn account_id_to_shard_id(account_id: &AccountId, num_shards: NumShards) -> 
 /// Tracker that tracks shard ids and accounts. It maintains two items: `tracked_accounts` and
 /// `tracked_shards`. The shards that are actually tracked are the union of shards that `tracked_accounts`
 /// are in and `tracked_shards`.
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct ShardTracker {
     /// Tracked accounts by shard id. For each shard id, the corresponding set of accounts should be
     /// non empty (otherwise the entry should not exist).

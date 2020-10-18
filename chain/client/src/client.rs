@@ -10,6 +10,7 @@ use cached::{Cached, SizedCache};
 use chrono::Utc;
 use log::{debug, error, info, warn};
 
+use deepsize::DeepSizeOf;
 use near_chain::chain::TX_ROUTING_HEIGHT_HORIZON;
 use near_chain::test_utils::format_hash;
 use near_chain::types::{AcceptedBlock, LatestKnown};
@@ -43,6 +44,7 @@ use crate::SyncStatus;
 
 const NUM_REBROADCAST_BLOCKS: usize = 30;
 
+#[derive(DeepSizeOf)]
 pub struct Client {
     /// Adversarial controls
     #[cfg(feature = "adversarial")]
@@ -91,6 +93,7 @@ impl Client {
         validator_signer: Option<Arc<dyn ValidatorSigner>>,
         enable_doomslug: bool,
     ) -> Result<Self, Error> {
+        info!("PIOTR  test2");
         let doomslug_threshold_mode = if enable_doomslug {
             DoomslugThresholdMode::TwoThirds
         } else {
@@ -127,7 +130,7 @@ impl Client {
             doomslug_threshold_mode,
         );
 
-        Ok(Self {
+        let res = Self {
             #[cfg(feature = "adversarial")]
             adv_produce_blocks: false,
             #[cfg(feature = "adversarial")]
@@ -149,7 +152,12 @@ impl Client {
             rs: ReedSolomonWrapper::new(data_parts, parity_parts),
             rebroadcasted_blocks: SizedCache::with_size(NUM_REBROADCAST_BLOCKS),
             last_time_head_progress_made: Instant::now(),
-        })
+        };
+
+        #[cfg(target_pointer_width = "64")]
+        println!("PIOTR test {}", res.deep_size_of());
+
+        Ok(res)
     }
 
     // Checks if it's been at least `stall_timeout` since the last time the head was updated, or

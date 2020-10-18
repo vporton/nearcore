@@ -5,6 +5,13 @@ authors = ["Near Inc <hello@nearprotocol.com>"]
 edition = "2018"
 
 [dependencies]
+# TODO remove by PIOTR
+node-runtime = { path = "../../runtime/runtime" }
+# TODO remove by PIOTR
+near-vm-runner = { path = "../../runtime/near-vm-runner" }
+
+memory-tracker = { path = "../../memory-tracker" }
+deepsize = { path = "../../deepsize" }
 ansi_term = "0.11"
 actix = "0.9"
 futures = "0.3"

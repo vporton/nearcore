@@ -4,6 +4,7 @@ use std::fmt;
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use chrono::{DateTime, NaiveDateTime, Utc};
+use deepsize::DeepSizeOf;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use regex::Regex;
@@ -207,6 +208,7 @@ pub fn is_valid_sub_account_id(signer_id: &AccountId, sub_account_id: &AccountId
 
 /// A wrapper around Option<T> that provides native Display trait.
 /// Simplifies propagating automatic Display trait on parent structs.
+#[derive(DeepSizeOf)]
 pub struct DisplayOption<T>(pub Option<T>);
 
 impl<T: fmt::Display> fmt::Display for DisplayOption<T> {

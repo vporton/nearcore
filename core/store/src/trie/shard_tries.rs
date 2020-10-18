@@ -2,6 +2,7 @@ use crate::db::{DBCol, DBOp, DBTransaction};
 use crate::trie::trie_storage::{TrieCache, TrieCachingStorage};
 use crate::{StorageError, Store, StoreUpdate, Trie, TrieChanges, TrieUpdate};
 use borsh::BorshSerialize;
+use deepsize::DeepSizeOf;
 use near_primitives::hash::CryptoHash;
 use near_primitives::trie_key::TrieKey;
 use near_primitives::types::{
@@ -11,7 +12,7 @@ use near_primitives::utils::get_block_shard_id;
 use std::rc::Rc;
 use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct ShardTries {
     pub(crate) store: Arc<Store>,
     /// Cache reserved for client actor to use

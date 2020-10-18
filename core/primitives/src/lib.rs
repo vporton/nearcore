@@ -1,9 +1,9 @@
-#[cfg(jemallocator)]
+//#[cfg(jemallocator)]
 extern crate jemallocator;
 
-#[cfg(jemallocator)]
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+// #[cfg(jemallocator)]
+//#[global_allocator]
+//static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 pub use borsh;
 
@@ -33,3 +33,49 @@ pub mod utils;
 pub mod validator_signer;
 pub mod version;
 pub mod views;
+
+/*
+pub trait MemorySize {
+    fn memory_size(&self) -> u64;
+}
+
+impl<A, B> MemorySize for HashMap<A, B>
+where
+    B: MemorySize,
+{
+    fn memory_size(&self) -> u64 {
+        let mut res = 0;
+        for value in self.values() {
+            res += value.memory_size()
+        }
+        res
+    }
+}
+
+#[macro_export]
+macro_rules! my_macro {
+    (pub struct $name:ident {
+        $($field_name:ident: $field_type:ty,)*
+    }) => {
+        impl $name {
+            // This is purely an example—not a good one.
+            fn memory_size(&mut self) -> u64 {
+                $(self.$field_name.memory_size() + )*
+                0
+            }
+        }
+    }
+}
+
+impl MemorySize for CryptoHash {
+    fn memory_size(&self) -> u64 {
+        mem::size_of::<CryptoHash>().try_into().unwrap()
+    }
+}
+
+impl MemorySize for Version {
+    fn memory_size(&self) -> u64 {
+        mem::size_of::<Version>().try_into().unwrap()
+    }
+}
+        */

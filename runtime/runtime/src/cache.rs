@@ -7,6 +7,9 @@ use near_primitives::contract::ContractCode;
 use near_primitives::hash::CryptoHash;
 use near_store::StorageError;
 
+#[cfg(not(feature = "no_cache"))]
+use deepsize::DeepSizeOf;
+
 /// Cache size in number of cached modules to hold.
 #[cfg(not(feature = "no_cache"))]
 const CACHE_SIZE: usize = 128;
@@ -38,4 +41,14 @@ pub(crate) fn get_code(
         assert_eq!(code_hash, code.get_hash());
         Arc::new(code)
     }))
+}
+
+#[cfg(feature = "no_cache")]
+pub fn get_cache_size() -> usize {
+    0
+}
+
+#[cfg(not(feature = "no_cache"))]
+pub fn get_cache_size() -> usize {
+    CODE.lock().unwrap().deep_size_of()
 }

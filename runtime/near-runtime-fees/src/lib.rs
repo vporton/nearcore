@@ -3,6 +3,7 @@
 //! * sir -- sender is receiver. Receipts that are directed by an account to itself are guaranteed
 //!   to not be cross-shard which is cheaper than cross-shard. Conversely, when sender is not a
 //!   receiver it might or might not be a cross-shard communication.
+use deepsize::DeepSizeOf;
 use num_rational::Rational;
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,7 @@ pub type Gas = u64;
 /// by the receiver).
 /// NOTE: `send_sir` or `send_not_sir` fees are usually burned when the item is being created.
 /// And `execution` fee is burned when the item is being executed.
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct Fee {
     /// Fee for sending an object from the sender to itself, guaranteeing that it does not leave
     /// the shard.
@@ -43,7 +44,7 @@ impl Fee {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct RuntimeFeesConfig {
     /// Describes the cost of creating an action receipt, `ActionReceipt`, excluding the actual cost
     /// of actions.
@@ -66,7 +67,7 @@ pub struct RuntimeFeesConfig {
 }
 
 /// Describes the cost of creating a data receipt, `DataReceipt`.
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct DataReceiptCreationConfig {
     /// Base cost of creating a data receipt.
     /// Both `send` and `exec` costs are burned when a new receipt has input dependencies. The gas
@@ -84,7 +85,7 @@ pub struct DataReceiptCreationConfig {
 }
 
 /// Describes the cost of creating a specific action, `Action`. Includes all variants.
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct ActionCreationConfig {
     /// Base cost of creating an account.
     pub create_account_cost: Fee,
@@ -116,7 +117,7 @@ pub struct ActionCreationConfig {
 }
 
 /// Describes the cost of creating an access key.
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct AccessKeyCreationConfig {
     /// Base cost of creating a full access access-key.
     pub full_access_cost: Fee,
@@ -127,7 +128,7 @@ pub struct AccessKeyCreationConfig {
 }
 
 /// Describes cost of storage per block
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq, DeepSizeOf)]
 pub struct StorageUsageConfig {
     /// Number of bytes for an account record, including rounding up for account id.
     pub num_bytes_account: u64,

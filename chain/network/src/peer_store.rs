@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 use borsh::BorshSerialize;
 use chrono::Utc;
+use deepsize::DeepSizeOf;
 use log::{debug, error};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -19,7 +20,7 @@ use near_store::{ColPeers, Store};
 use crate::types::{KnownPeerState, KnownPeerStatus, NetworkConfig, PeerInfo, ReasonForBan};
 
 /// Level of trust we have about a new (PeerId, Addr) pair.
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, DeepSizeOf)]
 pub enum TrustLevel {
     /// We learn about it from other peers.
     Indirect,
@@ -29,7 +30,7 @@ pub enum TrustLevel {
     Signed,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, DeepSizeOf)]
 struct VerifiedPeer {
     peer_id: PeerId,
     trust_level: TrustLevel,
@@ -45,6 +46,7 @@ impl VerifiedPeer {
 }
 
 /// Known peers store, maintaining cache of known peers and connection to storage to save/load them.
+#[derive(DeepSizeOf)]
 pub struct PeerStore {
     store: Arc<Store>,
     peer_states: HashMap<PeerId, KnownPeerState>,

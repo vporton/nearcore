@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock};
 
 use borsh::ser::BorshSerialize;
 use borsh::BorshDeserialize;
+use deepsize::DeepSizeOf;
 use log::{debug, error, info, warn};
 
 use near_chain::chain::NUM_EPOCHS_TO_KEEP_STORE_DATA;
@@ -56,6 +57,7 @@ const STATE_DUMP_FILE: &str = "state_dump";
 const GENESIS_ROOTS_FILE: &str = "genesis_roots";
 
 /// Wrapper type for epoch manager to get avoid implementing trait for foreign types.
+#[derive(DeepSizeOf)]
 pub struct SafeEpochManager(pub Arc<RwLock<EpochManager>>);
 
 impl AsRef<RwLock<EpochManager>> for SafeEpochManager {
@@ -113,6 +115,7 @@ impl EpochInfoProvider for SafeEpochManager {
 
 /// Defines Nightshade state transition and validator rotation.
 /// TODO: this possibly should be merged with the runtime cargo or at least reconciled on the interfaces.
+#[derive(DeepSizeOf)]
 pub struct NightshadeRuntime {
     genesis_config: GenesisConfig,
     genesis_runtime_config: Arc<RuntimeConfig>,

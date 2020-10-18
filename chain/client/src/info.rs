@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use actix::Addr;
 use ansi_term::Color::{Blue, Cyan, Green, White, Yellow};
+use deepsize::known_deep_size;
 use log::info;
 use sysinfo::{get_current_pid, set_open_files_limit, Pid, ProcessExt, System, SystemExt};
 
@@ -31,6 +32,7 @@ pub struct ValidatorInfoHelper {
 }
 
 /// A helper that prints information about current chain and reports to telemetry.
+// #[derive(DeepSizeOf)]
 pub struct InfoHelper {
     /// Nearcore agent (executable) version
     nearcore_version: Version,
@@ -49,6 +51,8 @@ pub struct InfoHelper {
     /// Telemetry actor.
     telemetry_actor: Addr<TelemetryActor>,
 }
+
+known_deep_size!(0, InfoHelper);
 
 impl InfoHelper {
     pub fn new(

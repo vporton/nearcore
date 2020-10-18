@@ -2,6 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use reed_solomon_erasure::galois_8::{Field, ReedSolomon};
 use serde::Serialize;
 
+use deepsize::{known_deep_size, DeepSizeOf};
 use near_crypto::Signature;
 
 use crate::hash::{hash, CryptoHash};
@@ -26,6 +27,7 @@ use std::sync::Arc;
     Clone,
     Debug,
     Default,
+    DeepSizeOf,
 )]
 pub struct ChunkHash(pub CryptoHash);
 
@@ -47,11 +49,11 @@ impl From<CryptoHash> for ChunkHash {
     }
 }
 
-#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize)]
+#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, DeepSizeOf)]
 pub struct ShardInfo(pub ShardId, pub ChunkHash);
 
 /// Contains the information that is used to sync state for shards as epochs switch
-#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize)]
+#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, DeepSizeOf)]
 pub struct StateSyncInfo {
     /// The first block of the epoch for which syncing is happening
     pub epoch_tail_hash: CryptoHash,
@@ -59,7 +61,7 @@ pub struct StateSyncInfo {
     pub shards: Vec<ShardInfo>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug, DeepSizeOf)]
 pub struct ShardChunkHeaderInner {
     /// Previous block hash.
     pub prev_block_hash: CryptoHash,
@@ -85,7 +87,7 @@ pub struct ShardChunkHeaderInner {
     pub validator_proposals: Vec<ValidatorStake>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug, DeepSizeOf)]
 #[borsh_init(init)]
 pub struct ShardChunkHeaderV1 {
     pub inner: ShardChunkHeaderInner,
@@ -326,7 +328,16 @@ impl ShardChunkHeader {
 }
 
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Hash, Eq, PartialEq, Clone, Debug, Default,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Hash,
+    Eq,
+    PartialEq,
+    Clone,
+    Debug,
+    Default,
+    DeepSizeOf,
 )]
 pub struct ChunkHashHeight(pub ChunkHash, pub BlockHeight);
 
@@ -461,7 +472,7 @@ impl PartialEncodedChunk {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct PartialEncodedChunkV2 {
     pub header: ShardChunkHeader,
     pub parts: Vec<PartialEncodedChunkPart>,
@@ -481,14 +492,13 @@ impl From<PartialEncodedChunk> for PartialEncodedChunkV2 {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct PartialEncodedChunkV1 {
     pub header: ShardChunkHeaderV1,
     pub parts: Vec<PartialEncodedChunkPart>,
     pub receipts: Vec<ReceiptProof>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PartialEncodedChunkWithArcReceipts {
     pub header: ShardChunkHeader,
     pub parts: Vec<PartialEncodedChunkPart>,
@@ -505,18 +515,18 @@ impl From<PartialEncodedChunkWithArcReceipts> for PartialEncodedChunk {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct ShardProof {
     pub from_shard_id: ShardId,
     pub to_shard_id: ShardId,
     pub proof: MerklePath,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 /// For each Merkle proof there is a subset of receipts which may be proven.
 pub struct ReceiptProof(pub Vec<Receipt>, pub ShardProof);
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct PartialEncodedChunkPart {
     pub part_ord: u64,
     pub part: Box<[u8]>,
@@ -531,7 +541,7 @@ pub struct ShardChunkV1 {
     pub receipts: Vec<Receipt>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct ShardChunkV2 {
     pub chunk_hash: ChunkHash,
     pub header: ShardChunkHeader,
@@ -539,7 +549,7 @@ pub struct ShardChunkV2 {
     pub receipts: Vec<Receipt>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub enum ShardChunk {
     V1(ShardChunkV1),
     V2(ShardChunkV2),
@@ -653,7 +663,9 @@ impl ShardChunk {
     }
 }
 
-#[derive(Default, BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Default, BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf,
+)]
 pub struct EncodedShardChunkBody {
     pub parts: Vec<Option<Box<[u8]>>>,
 }
@@ -690,7 +702,7 @@ pub struct ReceiptList<'a>(pub ShardId, pub &'a Vec<Receipt>);
 #[derive(BorshSerialize, BorshDeserialize, Serialize)]
 struct TransactionReceipt(Vec<SignedTransaction>, Vec<Receipt>);
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub struct EncodedShardChunkV1 {
     pub header: ShardChunkHeaderV1,
     pub content: EncodedShardChunkBody,
@@ -716,7 +728,7 @@ impl EncodedShardChunkV1 {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub struct EncodedShardChunkV2 {
     pub header: ShardChunkHeader,
     pub content: EncodedShardChunkBody,
@@ -1043,6 +1055,8 @@ pub struct ReedSolomonWrapper {
     rs: ReedSolomon,
     ttl: u64,
 }
+
+known_deep_size!(0, ReedSolomonWrapper);
 
 impl ReedSolomonWrapper {
     pub fn new(data_shards: usize, parity_shards: usize) -> Self {

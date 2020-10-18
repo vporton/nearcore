@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::DeepSizeOf;
 use num_rational::Rational;
 use serde::Serialize;
 use smart_default::SmartDefault;
@@ -19,7 +20,7 @@ pub const AGGREGATOR_KEY: &[u8] = b"AGGREGATOR";
 
 /// Epoch config, determines validator assignment for given epoch.
 /// Can change from epoch to epoch depending on the sharding and other parameters, etc.
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct EpochConfig {
     /// Epoch length in block heights.
     pub epoch_length: BlockHeightDelta,
@@ -50,7 +51,7 @@ pub struct EpochConfig {
 }
 
 /// Information per each block.
-#[derive(Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug)]
+#[derive(Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, DeepSizeOf)]
 pub struct BlockInfo {
     pub height: BlockHeight,
     pub last_finalized_height: BlockHeight,
@@ -103,11 +104,23 @@ impl BlockInfo {
     }
 }
 
-#[derive(Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, Eq, DeepSizeOf,
+)]
 pub struct ValidatorWeight(ValidatorId, u64);
 
 /// Information per epoch.
-#[derive(SmartDefault, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    SmartDefault,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    DeepSizeOf,
+)]
 pub struct EpochInfo {
     /// Ordinal of given epoch from genesis.
     /// There can be multiple epochs with the same ordinal in case of long forks.
@@ -154,7 +167,7 @@ pub struct EpochSummary {
 }
 
 /// State that a slashed validator can be in.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub enum SlashState {
     /// Double Sign, will be partially slashed.
     DoubleSign,

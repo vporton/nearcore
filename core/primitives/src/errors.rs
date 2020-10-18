@@ -6,12 +6,22 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
 
 use crate::hash::CryptoHash;
+use deepsize::DeepSizeOf;
 use near_rpc_error_macro::RpcError;
 use near_vm_errors::{FunctionCallError, VMLogicError};
 
 /// Error returned in the ExecutionOutcome in case of failure
 #[derive(
-    BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum TxExecutionError {
     /// An error happened during Acton execution
@@ -78,7 +88,7 @@ impl From<ExternalError> for VMLogicError {
 }
 
 /// Internal
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub enum StorageError {
     /// Key-value db internal failure
     StorageInternalError,
@@ -102,7 +112,16 @@ impl std::error::Error for StorageError {}
 
 /// An error happened during TX execution
 #[derive(
-    BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum InvalidTxError {
     /// Happens if a wrong AccessKey used or AccessKey has not enough permissions
@@ -144,7 +163,16 @@ pub enum InvalidTxError {
 }
 
 #[derive(
-    BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum InvalidAccessKeyError {
     /// The access key identified by the `public_key` doesn't exist for the account
@@ -170,7 +198,16 @@ pub enum InvalidAccessKeyError {
 
 /// Describes the error for validating a list of actions.
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum ActionsValidationError {
     /// The delete action must be a final aciton in transaction
@@ -201,7 +238,16 @@ pub enum ActionsValidationError {
 
 /// Describes the error for validating a receipt.
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum ReceiptValidationError {
     /// The `predecessor_id` of a Receipt is not valid.
@@ -317,7 +363,16 @@ impl Display for ActionsValidationError {
 
 /// An error happened during Acton execution
 #[derive(
-    BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub struct ActionError {
     /// Index of the failed action in the transaction.
@@ -328,7 +383,16 @@ pub struct ActionError {
 }
 
 #[derive(
-    BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, RpcError,
+    BorshSerialize,
+    BorshDeserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    RpcError,
+    DeepSizeOf,
 )]
 pub enum ActionErrorKind {
     /// Happens when CreateAccount action tries to create an account with account_id which is already exists in the storage

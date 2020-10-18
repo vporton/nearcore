@@ -1,3 +1,4 @@
+#![feature(thread_id_value)]
 use std::convert::TryInto;
 use std::env;
 use std::fs;
@@ -13,14 +14,18 @@ use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
 use git_version::git_version;
+use memory_tracker::allocator::MyAllocator;
 use near_primitives::version::{Version, PROTOCOL_VERSION};
 use neard::config::init_testnet_configs;
 use neard::genesis_validate::validate_genesis;
 use neard::{get_default_home, get_store_path, init_configs, load_config, start_with_config};
 
+#[global_allocator]
+static ALLOC: MyAllocator = MyAllocator;
+
 fn init_logging(verbose: Option<&str>) {
     let mut env_filter = EnvFilter::new(
-        "tokio_reactor=info,near=info,stats=info,telemetry=info,delay_detector=info",
+        "tokio_reactor=info,near=info,stats=info,telemetry=info,delay_detector=info,memory_tracker=info",
     );
 
     if let Some(module) = verbose {
@@ -120,6 +125,10 @@ fn main() {
             std::process::exit(1);
         }
     }
+    info!("track_current_process pt1");
+    memory_tracker::allocator::enable_tracking("main");
+    memory_tracker::track_current_process(15);
+    info!("track_current_process pt2");
 
     let home_dir = matches.value_of("home").map(|dir| Path::new(dir)).unwrap();
 

@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::hash::CryptoHash;
 use crate::serialize::{option_u128_dec_format, u128_dec_format_compatible};
 use crate::types::{AccountId, Balance, Nonce, StorageUsage};
+use deepsize::DeepSizeOf;
 
 /// Per account information stored in the state.
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -26,7 +27,16 @@ pub struct Account {
 /// that can be issued.
 /// `account_id,public_key` is a key in the state
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Hash,
+    Clone,
+    Debug,
+    DeepSizeOf,
 )]
 pub struct AccessKey {
     /// The nonce for this access key.
@@ -47,7 +57,16 @@ impl AccessKey {
 
 /// Defines permissions for AccessKey
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Hash,
+    Clone,
+    Debug,
+    DeepSizeOf,
 )]
 pub enum AccessKeyPermission {
     FunctionCall(FunctionCallPermission),
@@ -62,7 +81,16 @@ pub enum AccessKeyPermission {
 /// It also restrict the account ID of the receiver for this function call.
 /// It also can restrict the method name for the allowed function calls.
 #[derive(
-    BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Hash,
+    Clone,
+    Debug,
+    DeepSizeOf,
 )]
 pub struct FunctionCallPermission {
     /// Allowance is a balance limit to use by this access key to pay for function call gas and

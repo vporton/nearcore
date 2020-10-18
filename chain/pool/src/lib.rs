@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 use crate::types::{PoolIterator, PoolKey, TransactionGroup};
 use borsh::BorshSerialize;
+use deepsize::DeepSizeOf;
 use near_crypto::PublicKey;
 use near_primitives::hash::{hash, CryptoHash};
 use near_primitives::transaction::SignedTransaction;
@@ -12,6 +13,7 @@ use std::ops::Bound;
 pub mod types;
 
 /// Transaction pool: keeps track of transactions that were not yet accepted into the block chain.
+#[derive(DeepSizeOf)]
 pub struct TransactionPool {
     /// Transactions are grouped by a pair of (account ID, signer public key).
     /// NOTE: It's more efficient on average to keep transactions unsorted and with potentially

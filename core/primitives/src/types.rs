@@ -2,6 +2,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use derive_more::{AsRef as DeriveAsRef, From as DeriveFrom};
 use serde::{Deserialize, Serialize};
 
+use deepsize::DeepSizeOf;
 use near_crypto::PublicKey;
 
 use crate::account::{AccessKey, Account};
@@ -54,7 +55,17 @@ pub type PromiseId = Vec<ReceiptIndex>;
 pub type StateRoot = CryptoHash;
 
 /// Different types of finality.
-#[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    Serialize,
+    Deserialize,
+    BorshSerialize,
+    BorshDeserialize,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    DeepSizeOf,
+)]
 pub enum Finality {
     #[serde(rename = "optimistic")]
     None,
@@ -77,7 +88,7 @@ pub struct AccountWithPublicKey {
 }
 
 /// Account info for validators
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, DeepSizeOf)]
 pub struct AccountInfo {
     pub account_id: AccountId,
     pub public_key: PublicKey,
@@ -89,7 +100,17 @@ pub struct AccountInfo {
 ///
 /// NOTE: Currently, this type is only used in the view_client and RPC to be able to transparently
 /// pretty-serialize the bytes arrays as base64-encoded strings (see `serialize.rs`).
-#[derive(Debug, Clone, PartialEq, Eq, DeriveAsRef, DeriveFrom, BorshSerialize, BorshDeserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    DeriveAsRef,
+    DeriveFrom,
+    BorshSerialize,
+    BorshDeserialize,
+    DeepSizeOf,
+)]
 #[as_ref(forward)]
 pub struct StoreKey(Vec<u8>);
 
@@ -97,7 +118,17 @@ pub struct StoreKey(Vec<u8>);
 ///
 /// NOTE: Currently, this type is only used in the view_client and RPC to be able to transparently
 /// pretty-serialize the bytes arrays as base64-encoded strings (see `serialize.rs`).
-#[derive(Debug, Clone, PartialEq, Eq, DeriveAsRef, DeriveFrom, BorshSerialize, BorshDeserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    DeriveAsRef,
+    DeriveFrom,
+    BorshSerialize,
+    BorshDeserialize,
+    DeepSizeOf,
+)]
 #[as_ref(forward)]
 pub struct StoreValue(Vec<u8>);
 
@@ -106,12 +137,22 @@ pub struct StoreValue(Vec<u8>);
 /// NOTE: The main reason for this to exist (except the type-safety) is that the value is
 /// transparently serialized and deserialized as a base64-encoded string when serde is used
 /// (serde_json).
-#[derive(Debug, Clone, PartialEq, Eq, DeriveAsRef, DeriveFrom, BorshSerialize, BorshDeserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    DeriveAsRef,
+    DeriveFrom,
+    BorshSerialize,
+    BorshDeserialize,
+    DeepSizeOf,
+)]
 #[as_ref(forward)]
 pub struct FunctionArgs(Vec<u8>);
 
 /// A structure used to indicate the kind of state changes due to transaction/receipt processing, etc.
-#[derive(Debug, Clone, BorshSerialize, BorshDeserialize)]
+#[derive(Debug, Clone, BorshSerialize, BorshDeserialize, DeepSizeOf)]
 pub enum StateChangeKind {
     AccountTouched { account_id: AccountId },
     AccessKeyTouched { account_id: AccountId },
@@ -359,7 +400,7 @@ impl StateChanges {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Debug, BorshSerialize, BorshDeserialize, Serialize)]
+#[derive(PartialEq, Eq, Clone, Debug, BorshSerialize, BorshDeserialize, Serialize, DeepSizeOf)]
 pub struct StateRootNode {
     /// in Nightshade, data is the serialized TrieNodeWithSize
     pub data: Vec<u8>,
@@ -388,12 +429,13 @@ impl StateRootNode {
     BorshSerialize,
     BorshDeserialize,
     Serialize,
+    DeepSizeOf,
 )]
 #[as_ref(forward)]
 pub struct EpochId(pub CryptoHash);
 
 /// Stores validator and its stake.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub struct ValidatorStake {
     /// Account that stakes money.
     pub account_id: AccountId,
@@ -433,13 +475,13 @@ impl ValidatorStake {
 }
 
 /// Information after block was processed.
-#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, Clone, Eq)]
+#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, Clone, Eq, DeepSizeOf)]
 pub struct BlockExtra {
     pub challenges_result: ChallengesResult,
 }
 
 /// Information after chunk was processed, used to produce or check next chunk.
-#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, Clone, Eq)]
+#[derive(Debug, PartialEq, BorshSerialize, BorshDeserialize, Serialize, Clone, Eq, DeepSizeOf)]
 pub struct ChunkExtra {
     /// Post state root after applying give chunk.
     pub state_root: StateRoot,
@@ -475,7 +517,17 @@ impl ChunkExtra {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    DeepSizeOf,
+)]
 #[serde(untagged)]
 pub enum BlockId {
     Height(BlockHeight),
@@ -484,14 +536,34 @@ pub enum BlockId {
 
 pub type MaybeBlockId = Option<BlockId>;
 
-#[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    DeepSizeOf,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum SyncCheckpoint {
     Genesis,
     EarliestAvailable,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    DeepSizeOf,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum BlockReference {
     BlockId(BlockId),
@@ -517,7 +589,9 @@ impl From<Finality> for BlockReference {
     }
 }
 
-#[derive(Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq)]
+#[derive(
+    Default, BorshSerialize, BorshDeserialize, Serialize, Clone, Debug, PartialEq, DeepSizeOf,
+)]
 pub struct ValidatorStats {
     pub produced: NumBlocks,
     pub expected: NumBlocks,
@@ -530,7 +604,17 @@ pub struct BlockChunkValidatorStats {
 }
 
 /// Reasons for removing a validator from the validator set.
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    DeepSizeOf,
+)]
 pub enum ValidatorKickoutReason {
     /// Slashed validators are kicked out.
     Slashed,
@@ -551,7 +635,7 @@ pub enum ValidatorKickoutReason {
     DidNotGetASeat,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, DeepSizeOf)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum TransactionOrReceiptId {
     Transaction { transaction_hash: CryptoHash, sender_id: AccountId },

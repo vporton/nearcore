@@ -3,6 +3,7 @@ use bs58;
 use curve25519_dalek::constants::{
     RISTRETTO_BASEPOINT_POINT as G, RISTRETTO_BASEPOINT_TABLE as GT,
 };
+use deepsize::DeepSizeOf;
 use rand_core::OsRng;
 use std::borrow::Borrow;
 use std::convert::TryFrom;

@@ -1,4 +1,4 @@
-mod cache;
+pub mod cache;
 mod errors;
 mod imports;
 mod memory;

@@ -1,3 +1,4 @@
+use deepsize::DeepSizeOf;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::sync::Arc;
@@ -25,19 +26,20 @@ const MAX_HEIGHTS_AHEAD_TO_STORE_APPROVALS: BlockHeight = 10_000;
 ///             and is what should be used in production (and what guarantees finality)
 /// `NoApprovals` means the block production is not blocked on approvals. This is used
 ///             in many tests (e.g. `cross_shard_tx`) to create lots of forkfulness.
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, DeepSizeOf)]
 pub enum DoomslugThresholdMode {
     NoApprovals,
     TwoThirds,
 }
 
 /// The result of processing an approval.
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, DeepSizeOf)]
 pub enum DoomslugBlockProductionReadiness {
     NotReady,
     ReadySince(Instant),
 }
 
+#[derive(DeepSizeOf)]
 struct DoomslugTimer {
     started: Instant,
     last_endorsement_sent: Instant,
@@ -48,11 +50,13 @@ struct DoomslugTimer {
     max_delay: Duration,
 }
 
+#[derive(DeepSizeOf)]
 struct DoomslugTip {
     block_hash: CryptoHash,
     height: BlockHeight,
 }
 
+#[derive(DeepSizeOf)]
 struct DoomslugApprovalsTracker {
     witness: HashMap<AccountId, Approval>,
     account_id_to_stakes: HashMap<AccountId, (Balance, Balance)>,
@@ -78,6 +82,7 @@ struct DoomslugApprovalsTracker {
 /// ensures that only instances within the horizon are kept, and the user of the `Doomslug` is
 /// responsible for ensuring that only approvals for proper account_ids with valid signatures are
 /// provided.
+#[derive(DeepSizeOf)]
 struct DoomslugApprovalsTrackersAtHeight {
     approval_trackers: HashMap<ApprovalInner, DoomslugApprovalsTracker>,
     last_approval_per_account: HashMap<AccountId, ApprovalInner>,
@@ -86,6 +91,7 @@ struct DoomslugApprovalsTrackersAtHeight {
 /// Contains all the logic for Doomslug, but no integration with chain or storage. The integration
 /// happens via `PersistentDoomslug` struct. The split is to simplify testing of the logic separate
 /// from the chain.
+#[derive(DeepSizeOf)]
 pub struct Doomslug {
     approval_tracking: HashMap<BlockHeight, DoomslugApprovalsTrackersAtHeight>,
     /// Largest target height for which we issued an approval

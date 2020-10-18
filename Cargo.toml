@@ -50,8 +50,10 @@ members = [
 # pins this version to fix https://github.com/actix/actix-net/issues/129
 actix-rt = "=1.1.1"
 openssl-probe = { version = "0.1.2" }
+jemallocator = { version = "0.3" }
 
 [dev-dependencies]
+deepsize = { path = "deepsize" }
 actix = "0.9"
 lazy_static = "1.4"
 log = "^0.4.6"
@@ -75,10 +77,14 @@ neard = { path = "./neard"}
 
 testlib = { path = "./test-utils/testlib" }
 
+memory-tracker = { path = "./memory-tracker" }
+
 [profile.release]
-lto = true        # Enable full link-time optimization.
-codegen-units = 1 # Use only 1 codegen-unit to enable full optimizations.
+debug = true
+lto = false        # Enable full link-time optimization.
+codegen-units = 256 # Use only 1 codegen-unit to enable full optimizations.
 overflow-checks = true
+# jemallocator = { version = "0.3.0", features = ["unprefixed_malloc_on_supported_platforms", "profiling"] }
 
 [profile.bench]
 lto = true
@@ -106,3 +112,4 @@ no_cache = ["neard/no_cache"]
 metric_recorder = ["neard/metric_recorder"]
 delay_detector = ["neard/delay_detector"]
 rosetta_rpc = ["neard/rosetta_rpc"]
+profiling = []

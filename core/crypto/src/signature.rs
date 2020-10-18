@@ -6,6 +6,7 @@ use std::io::{Error, ErrorKind, Write};
 use std::str::FromStr;
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::{known_deep_size, DeepSizeOf};
 use lazy_static::lazy_static;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
@@ -67,7 +68,7 @@ fn split_key_type_data(value: &str) -> Result<(KeyType, &str), crate::ParseKeyEr
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, DeepSizeOf)]
 pub struct Secp256K1PublicKey([u8; 64]);
 
 impl From<[u8; 64]> for Secp256K1PublicKey {
@@ -127,7 +128,7 @@ impl Ord for Secp256K1PublicKey {
     }
 }
 
-#[derive(Copy, Clone, derive_more::AsRef)]
+#[derive(Copy, Clone, derive_more::AsRef, DeepSizeOf)]
 #[as_ref(forward)]
 pub struct ED25519PublicKey(pub [u8; ed25519_dalek::PUBLIC_KEY_LENGTH]);
 
@@ -172,7 +173,7 @@ impl Ord for ED25519PublicKey {
 }
 
 /// Public key container supporting different curves.
-#[derive(Clone, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Clone, PartialEq, PartialOrd, Ord, Eq, DeepSizeOf)]
 pub enum PublicKey {
     ED25519(ED25519PublicKey),
     SECP256K1(Secp256K1PublicKey),
@@ -388,6 +389,8 @@ pub enum SecretKey {
     SECP256K1(secp256k1::key::SecretKey),
 }
 
+known_deep_size!(0, SecretKey);
+
 impl SecretKey {
     pub fn key_type(&self) -> KeyType {
         match self {
@@ -524,7 +527,7 @@ impl<'de> serde::Deserialize<'de> for SecretKey {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct Secp256K1Signature([u8; 65]);
 
 impl From<[u8; 65]> for Secp256K1Signature {
@@ -567,7 +570,7 @@ impl Debug for Secp256K1Signature {
 }
 
 /// Signature container supporting different curves.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, DeepSizeOf)]
 pub enum Signature {
     ED25519(ed25519_dalek::Signature),
     SECP256K1(Secp256K1Signature),

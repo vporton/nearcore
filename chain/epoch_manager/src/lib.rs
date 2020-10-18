@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
 
 use cached::{Cached, SizedCache};
+use deepsize::DeepSizeOf;
 use log::{debug, warn};
 use primitive_types::U256;
 
@@ -37,6 +38,7 @@ const AGGREGATOR_SAVE_PERIOD: u64 = 1000;
 
 /// Tracks epoch information across different forks, such as validators.
 /// Note: that even after garbage collection, the data about genesis epoch should be in the store.
+#[derive(DeepSizeOf)]
 pub struct EpochManager {
     store: Arc<Store>,
     /// Current epoch config.

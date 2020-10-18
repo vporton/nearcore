@@ -12,9 +12,10 @@ use crate::network::{AnnounceAccount, PeerId};
 use crate::sharding::ChunkHash;
 use crate::telemetry::TelemetryInfo;
 use crate::types::{AccountId, BlockHeight, EpochId};
+use deepsize::DeepSizeOf;
 
 /// Validator signer that is used to sign blocks and approvals.
-pub trait ValidatorSigner: Sync + Send {
+pub trait ValidatorSigner: Sync + Send + DeepSizeOf {
     /// Account id of the given validator.
     fn validator_id(&self) -> &AccountId;
 
@@ -60,7 +61,7 @@ pub trait ValidatorSigner: Sync + Send {
 
 /// Test-only signer that "signs" everything with 0s.
 /// Don't use in any production or code that requires signature verification.
-#[derive(Default)]
+#[derive(Default, DeepSizeOf)]
 pub struct EmptyValidatorSigner {
     account_id: AccountId,
 }
@@ -123,7 +124,7 @@ impl ValidatorSigner for EmptyValidatorSigner {
 }
 
 /// Signer that keeps secret key in memory and signs locally.
-#[derive(Clone)]
+#[derive(Clone, DeepSizeOf)]
 pub struct InMemoryValidatorSigner {
     account_id: AccountId,
     signer: Arc<dyn Signer>,

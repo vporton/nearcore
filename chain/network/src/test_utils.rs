@@ -3,6 +3,7 @@ use std::net::TcpListener;
 use std::time::Duration;
 
 use actix::{Actor, ActorContext, AsyncContext, Context, Handler, MailboxError, Message};
+use deepsize::DeepSizeOf;
 use futures::{future, FutureExt};
 use log::debug;
 use rand::{thread_rng, RngCore};
@@ -279,7 +280,7 @@ impl Handler<BanPeerSignal> for PeerManagerActor {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, DeepSizeOf)]
 pub struct MockNetworkAdapter {
     pub requests: Arc<RwLock<VecDeque<NetworkRequests>>>,
 }

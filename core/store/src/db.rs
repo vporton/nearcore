@@ -3,9 +3,11 @@ use std::cmp;
 use std::collections::HashMap;
 use std::io;
 use std::marker::PhantomPinned;
+use std::string::String;
 use std::sync::RwLock;
 
 use borsh::{BorshDeserialize, BorshSerialize};
+use deepsize::{Context, DeepSizeOf};
 #[cfg(feature = "single_thread_rocksdb")]
 use rocksdb::Env;
 use rocksdb::{
@@ -274,22 +276,37 @@ impl DBTransaction {
     }
 }
 
+// #[derive(DeepSizeOf)]
 pub struct RocksDB {
     db: DB,
     cfs: Vec<*const ColumnFamily>,
     _pin: PhantomPinned,
 }
 
+impl DeepSizeOf for RocksDB {
+    fn deep_size_of_children(&self, _context: &mut Context) -> usize {
+        0
+    }
+}
+
+// TODO inaccurate
+// known_deep_size!(0, RocksDB);
+
 // DB was already Send+Sync. cf and read_options are const pointers using only functions in
 // this file and safe to share across threads.
 unsafe impl Send for RocksDB {}
 unsafe impl Sync for RocksDB {}
 
+#[derive(DeepSizeOf)]
 pub struct TestDB {
     db: RwLock<Vec<HashMap<Vec<u8>, Vec<u8>>>>,
 }
 
-pub trait Database: Sync + Send {
+pub trait Database: Sync + Send + DeepSizeOf {
+    fn get_stats(&self) -> HashMap<String, u64> {
+        HashMap::new()
+    }
+
     fn transaction(&self) -> DBTransaction {
         DBTransaction { ops: Vec::new() }
     }
@@ -311,6 +328,50 @@ pub trait Database: Sync + Send {
 }
 
 impl Database for RocksDB {
+    fn get_stats(&self) -> HashMap<String, u64> {
+        let keys = [
+            "rocksdb.num-immutable-mem-table",
+            "rocksdb.mem-table-flush-pending",
+            "rocksdb.compaction-pending",
+            "rocksdb.background-errors",
+            "rocksdb.cur-size-active-mem-table",
+            "rocksdb.cur-size-all-mem-tables",
+            "rocksdb.size-all-mem-tables",
+            "rocksdb.num-entries-active-mem-table",
+            "rocksdb.num-entries-imm-mem-tables",
+            "rocksdb.num-deletes-active-mem-table",
+            "rocksdb.num-deletes-imm-mem-tables",
+            "rocksdb.estimate-num-keys",
+            "rocksdb.estimate-table-readers-mem",
+            "rocksdb.is-file-deletions-enabled",
+            "rocksdb.num-snapshots",
+            "rocksdb.oldest-snapshot-time",
+            "rocksdb.num-live-versions",
+            "rocksdb.current-super-version-number",
+            "rocksdb.estimate-live-data-size",
+            "rocksdb.min-log-number-to-keep",
+            "rocksdb.total-sst-files-size",
+            "rocksdb.base-level",
+            "rocksdb.estimate-pending-compaction-bytes",
+            "rocksdb.num-running-compactions",
+            "rocksdb.num-running-flushes",
+            "rocksdb.actual-delayed-write-rate",
+            "rocksdb.is-write-stopped",
+        ];
+
+        let mut res: HashMap<String, u64> = HashMap::new();
+        for key in &keys {
+            let mut sum = 0;
+            for cf in &self.cfs {
+                if let Ok(Some(val)) = self.db.property_int_value_cf(unsafe { &**cf }, key) {
+                    sum += val;
+                }
+            }
+            res.insert(String::from(*key), sum);
+        }
+        return res;
+    }
+
     fn get(&self, col: DBCol, key: &[u8]) -> Result<Option<Vec<u8>>, DBError> {
         let read_options = rocksdb_read_options();
         let result = self.db.get_cf_opt(unsafe { &*self.cfs[col as usize] }, key, &read_options)?;
