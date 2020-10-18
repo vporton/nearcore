@@ -101,7 +101,7 @@ pub struct ShardChunkHeaderV1 {
     pub hash: ChunkHash,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug, DeepSizeOf)]
 #[borsh_init(init)]
 pub struct ShardChunkHeaderV2 {
     pub inner: ShardChunkHeaderInner,
@@ -164,7 +164,7 @@ impl ShardChunkHeaderV2 {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq, Eq, Debug, DeepSizeOf)]
 pub enum ShardChunkHeader {
     V1(ShardChunkHeaderV1),
     V2(ShardChunkHeaderV2),
@@ -394,7 +394,7 @@ impl ShardChunkHeaderV1 {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOfi)]
 pub enum PartialEncodedChunk {
     V1(PartialEncodedChunkV1),
     V2(PartialEncodedChunkV2),
@@ -533,7 +533,7 @@ pub struct PartialEncodedChunkPart {
     pub merkle_proof: MerklePath,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub struct ShardChunkV1 {
     pub chunk_hash: ChunkHash,
     pub header: ShardChunkHeaderV1,
@@ -734,7 +734,7 @@ pub struct EncodedShardChunkV2 {
     pub content: EncodedShardChunkBody,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq, DeepSizeOf)]
 pub enum EncodedShardChunk {
     V1(EncodedShardChunkV1),
     V2(EncodedShardChunkV2),

@@ -40,8 +40,6 @@ pub use crate::trie::{
     WrappedTrieChanges,
 };
 use std::collections::HashMap;
-use std::ops::Deref;
-use std::pin::Pin;
 
 mod db;
 pub mod migrations;
