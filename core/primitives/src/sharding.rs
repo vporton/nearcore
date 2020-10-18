@@ -394,7 +394,7 @@ impl ShardChunkHeaderV1 {
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOfi)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, Eq, PartialEq, DeepSizeOf)]
 pub enum PartialEncodedChunk {
     V1(PartialEncodedChunkV1),
     V2(PartialEncodedChunkV2),
@@ -499,6 +499,7 @@ pub struct PartialEncodedChunkV1 {
     pub receipts: Vec<ReceiptProof>,
 }
 
+#[derive(DeepSizeOf)]
 pub struct PartialEncodedChunkWithArcReceipts {
     pub header: ShardChunkHeader,
     pub parts: Vec<PartialEncodedChunkPart>,
