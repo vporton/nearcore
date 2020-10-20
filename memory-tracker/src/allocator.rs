@@ -73,7 +73,7 @@ unsafe impl GlobalAlloc for MyAllocator {
                         //_ZN9backtrace9backtrace5trace17h
                         if !name.as_str().unwrap_or("").contains("near")
                             && !name.as_str().unwrap_or("").contains("actix")
-                            && !name.as_str().unwrap_or("").contains("wasmer")
+                            && !name.as_str().unwrap_or("").contains("wasm")
                             && !name.as_str().unwrap_or("").contains("rocksdb")
                             && !name.as_str().unwrap_or("").contains("main")
                             && !name.as_str().unwrap_or("").contains("tokio")
