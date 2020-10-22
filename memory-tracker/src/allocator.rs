@@ -147,7 +147,7 @@ unsafe impl GlobalAlloc for MyAllocator {
         SANITY.fetch_add(1, Ordering::SeqCst);
         let new_layout = Layout::from_size_align(layout.size() + EXTRA, layout.align()).unwrap();
 
-        *(ptr.offset(layout.size() as isize) as *mut u64) = 0;
+        *(ptr.offset(layout.size() as isize) as *mut u64) = (MAGIC + 10) as u64;
         let tid: usize = *(ptr.offset(layout.size() as isize) as *mut u64).offset(2) as usize;
 
         MEM_SIZE[tid % COUNTERS_SIZE].fetch_sub(layout.size(), Ordering::SeqCst);
