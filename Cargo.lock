@@ -2646,6 +2646,7 @@ dependencies = [
  "jemalloc-ctl",
  "jemalloc-sys",
  "jemallocator",
+ "libc",
  "log",
  "near-logger-utils",
  "tracing",

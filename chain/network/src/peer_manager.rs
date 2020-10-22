@@ -196,6 +196,7 @@ impl PeerManagerActor {
         ctx.run_later(Duration::from_secs(10), move |act, ctx| {
             info!("PIOTR4 log_mem_usage");
             info!("PIOTR4 PeerManagerActor: {}", act.deep_size_of());
+            info!("PIOTR4 get_sanity_val: {}", memory_tracker::allocator::get_sanity_val());
             act.log_mem_usage(ctx);
         });
     }
