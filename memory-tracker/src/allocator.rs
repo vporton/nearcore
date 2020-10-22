@@ -20,6 +20,7 @@ static mut SKIP_PTR: [u8; 1 << 20] = [0; 1 << 20];
 static mut CHECKED_PTR: [u8; 1 << 20] = [0; 1 << 20];
 
 static mut ADDR: Option<*mut c_void> = None;
+static mut RESET_CACHE: u64 = 0;
 
 pub struct MyAllocator;
 
@@ -98,6 +99,11 @@ fn skip_ptr(addr: *mut c_void) -> bool {
 
 unsafe impl GlobalAlloc for MyAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        RESET_CACHE = (RESET_CACHE + 1) % 65536;
+        if RESET_CACHE == 0 {
+            backtrace::clear_symbol_cache()
+        }
+
         SANITY.fetch_add(1, Ordering::SeqCst);
 
         let new_layout = Layout::from_size_align(layout.size() + EXTRA, layout.align()).unwrap();
