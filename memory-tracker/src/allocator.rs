@@ -63,6 +63,8 @@ const IGNORE_START: &'static [&'static str] = &[
 
 const IGNORE_INSIDE: &'static [&'static str] = &[
     "$LT$alloc",
+    "serde_json..de..Deserializer",
+    "$LT$tracing_subscriber",
     //  "collections",
     //  "actix..",
 ];
