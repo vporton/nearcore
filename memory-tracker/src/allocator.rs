@@ -3,7 +3,7 @@ use libc;
 use log::info;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
-use std::os::raw::{c_char, c_int, c_void};
+use std::os::raw::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 const COUNTERS_SIZE: usize = 16384;
@@ -43,10 +43,6 @@ pub fn get_tid() -> usize {
     res
 }
 
-extern "C" {
-    pub fn backtrace_symbols(buf: *mut *mut c_void, sz: c_int) -> *mut *mut c_char;
-}
-
 pub fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
     h = h.overflowing_mul(0xff51afd7ed558ccd).0;
@@ -75,27 +71,24 @@ fn skip_ptr(addr: *mut c_void) -> bool {
     if addr as u64 > 0x700000000000 {
         return true;
     }
-    let ary: [*mut c_void; 1] = [addr as *mut c_void; 1];
-
     let mut found = false;
-    unsafe {
-        let res = backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 1);
-        for &s in IGNORE_START {
-            // could be optimized
-            if libc::strstr(*res, s.as_ptr() as *const i8) == *res {
-                found = true;
-                break;
+    backtrace::resolve(addr, |symbol| {
+        if let Some(name) = symbol.name() {
+            let name = name.as_str().unwrap_or("");
+            for &s in IGNORE_START {
+                if name.starts_with(s) {
+                    found = true;
+                    break;
+                }
+            }
+            for &s in IGNORE_INSIDE {
+                if name.contains(s) {
+                    found = true;
+                    break;
+                }
             }
         }
-        for &s in IGNORE_INSIDE {
-            if !found && libc::strstr(*res, s.as_ptr() as *const i8) != (0 as *mut c_char) {
-                found = true;
-                break;
-            }
-        }
-
-        libc::free(res as *mut core::ffi::c_void);
-    };
+    });
 
     return found;
 }
