@@ -15,8 +15,8 @@ static GTID: AtomicUsize = AtomicUsize::new(0);
 static SANITY: AtomicUsize = AtomicUsize::new(0);
 static mut FILENAME: [u8; 32] = [0; 32];
 
-static mut GOOD_PTR: [u8; 1 << 20] = [0; 1 << 20];
-static mut BAD_PTR: [u8; 1 << 20] = [0; 1 << 20];
+static mut SKIP_PTR: [u8; 1 << 20] = [0; 1 << 20];
+static mut CHECKED_PTR: [u8; 1 << 20] = [0; 1 << 20];
 
 static mut ADDR: Option<*mut c_void> = None;
 
@@ -47,11 +47,58 @@ extern "C" {
     pub fn backtrace_symbols(buf: *mut *mut c_void, sz: c_int) -> *mut *mut c_char;
 }
 
-/*
-fn is_good_ptr(addr: *mut c_void) -> bool {
-    return true;
+pub fn murmur64(mut h: u64) -> u64 {
+    h ^= h >> 33;
+    h = h.overflowing_mul(0xff51afd7ed558ccd).0;
+    h ^= h >> 33;
+    h = h.overflowing_mul(0xc4ceb9fe1a85ec53).0;
+    h ^= h >> 33;
+    return h;
 }
-*/
+
+const IGNORE_START: &'static [&'static str] = &[
+    "__rg_",
+    "_ZN5alloc",
+    "_ZN6base64",
+    "_ZN6cached",
+    "_ZN9hashbrown",
+    "_ZN20reed_solomon_erasure",
+];
+
+const IGNORE_INSIDE: &'static [&'static str] = &[
+    "$LT$alloc",
+    //  "collections",
+    //  "actix..",
+];
+
+fn skip_ptr(addr: *mut c_void) -> bool {
+    if addr as u64 > 0x700000000000 {
+        return true;
+    }
+    let ary: [*mut c_void; 1] = [addr as *mut c_void; 1];
+
+    let mut found = false;
+    unsafe {
+        let res = backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 1);
+        for &s in IGNORE_START {
+            // could be optimized
+            if libc::strstr(*res, s.as_ptr() as *const i8) == *res {
+                found = true;
+                break;
+            }
+        }
+        for &s in IGNORE_INSIDE {
+            if !found && libc::strstr(*res, s.as_ptr() as *const i8) != (0 as *mut c_char) {
+                found = true;
+                break;
+            }
+        }
+
+        libc::free(res as *mut core::ffi::c_void);
+    };
+
+    return found;
+}
 
 unsafe impl GlobalAlloc for MyAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
@@ -66,7 +113,7 @@ unsafe impl GlobalAlloc for MyAllocator {
         MEM_CNT[tid % COUNTERS_SIZE].fetch_add(1, Ordering::SeqCst);
 
         let mut addr: Option<*mut c_void> = Some(1 as *mut c_void);
-        let mut ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
+        let ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
 
         //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
         if layout.size() >= 1024 {
@@ -74,6 +121,20 @@ unsafe impl GlobalAlloc for MyAllocator {
             for i in 1..10 {
                 if ary[i] < 0x700000000000 as *mut c_void {
                     addr = Some(ary[i] as *mut c_void);
+                    let hash = murmur64(ary[i] as u64) % (1 << 23);
+                    if (SKIP_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
+                        continue;
+                    }
+                    if (CHECKED_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
+                        break;
+                    }
+                    let should_skip = skip_ptr(ary[i]);
+                    if should_skip {
+                        SKIP_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+                        continue;
+                    }
+                    CHECKED_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+
                     break;
                 }
             }
