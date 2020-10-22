@@ -1,6 +1,7 @@
 use arr_macro::arr;
 use libc;
 use log::info;
+use rand::Rng;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
 use std::os::raw::c_void;
@@ -111,7 +112,8 @@ unsafe impl GlobalAlloc for MyAllocator {
         let ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
 
         //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
-        if layout.size() >= 1024 {
+
+        if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
             libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
             for i in 1..10 {
                 if ary[i] < 0x700000000000 as *mut c_void {

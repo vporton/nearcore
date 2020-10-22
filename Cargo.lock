@@ -2649,6 +2649,7 @@ dependencies = [
  "libc",
  "log",
  "near-logger-utils",
+ "rand 0.7.3",
  "tracing",
 ]
 
