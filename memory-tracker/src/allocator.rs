@@ -3,7 +3,7 @@ use libc;
 use log::info;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
-use std::os::raw::c_void;
+use std::os::raw::{c_char, c_int, c_void};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 const COUNTERS_SIZE: usize = 16384;
@@ -14,6 +14,9 @@ static ENABLED: AtomicUsize = AtomicUsize::new(0);
 static GTID: AtomicUsize = AtomicUsize::new(0);
 static SANITY: AtomicUsize = AtomicUsize::new(0);
 static mut FILENAME: [u8; 32] = [0; 32];
+
+static mut GOOD_PTR: [u8; 1 << 20] = [0; 1 << 20];
+static mut BAD_PTR: [u8; 1 << 20] = [0; 1 << 20];
 
 static mut ADDR: Option<*mut c_void> = None;
 
@@ -40,6 +43,16 @@ pub fn get_tid() -> usize {
     res
 }
 
+extern "C" {
+    pub fn backtrace_symbols(buf: *mut *mut c_void, sz: c_int) -> *mut *mut c_char;
+}
+
+/*
+fn is_good_ptr(addr: *mut c_void) -> bool {
+    return true;
+}
+*/
+
 unsafe impl GlobalAlloc for MyAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         SANITY.fetch_add(1, Ordering::SeqCst);
@@ -52,15 +65,17 @@ unsafe impl GlobalAlloc for MyAllocator {
         MEM_SIZE[tid % COUNTERS_SIZE].fetch_add(layout.size(), Ordering::SeqCst);
         MEM_CNT[tid % COUNTERS_SIZE].fetch_add(1, Ordering::SeqCst);
 
-        let mut addr: Option<*mut c_void> = None;
-        // let mut cnt = 0;
-        let mut ary: [u64; 10] = [0; 10];
+        let mut addr: Option<*mut c_void> = Some(1 as *mut c_void);
+        let mut ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
 
-        libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
-        for i in 1..10 {
-            if ary[i] < 0x700000000000 {
-                addr = Some(ary[i] as *mut c_void);
-                break;
+        //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
+        if layout.size() >= 1024 {
+            libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
+            for i in 1..10 {
+                if ary[i] < 0x700000000000 as *mut c_void {
+                    addr = Some(ary[i] as *mut c_void);
+                    break;
+                }
             }
         }
 
