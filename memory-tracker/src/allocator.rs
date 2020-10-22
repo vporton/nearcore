@@ -1,5 +1,5 @@
 use arr_macro::arr;
-use backtrace;
+use libc;
 use log::info;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
@@ -54,7 +54,17 @@ unsafe impl GlobalAlloc for MyAllocator {
 
         let mut addr: Option<*mut c_void> = None;
         // let mut cnt = 0;
+        let mut ary: [u64; 10] = [0; 10];
 
+        libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
+        for i in 1..10 {
+            if ary[i] < 0x700000000000 {
+                addr = Some(ary[i] as *mut c_void);
+                break;
+            }
+        }
+
+        /*
         IN_TRACE.with(|in_trace| {
             if *in_trace.borrow() != 0 {
                 return;
@@ -131,7 +141,7 @@ unsafe impl GlobalAlloc for MyAllocator {
                 skip
             });
             *in_trace.borrow_mut() = 0;
-        });
+        });*/
 
         ADDR = addr;
 
