@@ -9,6 +9,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::os::raw::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::thread;
 
 const COUNTERS_SIZE: usize = 16384;
 static JEMALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -45,6 +46,10 @@ pub fn get_tid() -> usize {
     });
     SANITY.fetch_sub(1, Ordering::SeqCst);
     res
+}
+
+extern "C" {
+    pub fn gettid() -> u32;
 }
 
 pub fn murmur64(mut h: u64) -> u64 {
@@ -116,6 +121,7 @@ unsafe impl GlobalAlloc for MyAllocator {
 
         if IN_TRACE.with(|in_trace| *in_trace.borrow()) == 0 {
             IN_TRACE.with(|in_trace| *in_trace.borrow_mut() = 1);
+            let real_tid = gettid();
             if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
                 let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
                 for i in 1..min(size as usize, 10) {
@@ -137,7 +143,7 @@ unsafe impl GlobalAlloc for MyAllocator {
 
                         let tid = get_tid();
 
-                        let fname = format!("/tmp/logs/{}", tid);
+                        let fname = format!("/tmp/logs/{}", real_tid);
 
                         if let Ok(mut f) =
                             OpenOptions::new().create(true).write(true).append(true).open(fname)
@@ -146,15 +152,15 @@ unsafe impl GlobalAlloc for MyAllocator {
                             let size2 =
                                 libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256) as usize;
                             for i in 0..size2 {
-                                let addr = ary2[i];
-                                f.write(format!("STACK_FOR {:?}\n", addr).as_bytes()).unwrap();
+                                let addr2 = ary2[i];
+                                f.write(format!("STACK_FOR {:?}\n", addr2).as_bytes()).unwrap();
 
-                                backtrace::resolve(addr, |symbol| {
+                                backtrace::resolve(addr2, |symbol| {
                                     if let Some(name) = symbol.name() {
                                         let name = name.as_str().unwrap_or("");
 
                                         f.write(
-                                            format!("STACK {:?} {:?}\n", addr, name).as_bytes(),
+                                            format!("STACK {:?} {:?}\n", addr2, name).as_bytes(),
                                         )
                                         .unwrap();
                                     }
