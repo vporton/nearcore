@@ -112,7 +112,7 @@ unsafe impl GlobalAlloc for MyAllocator {
         MEM_CNT[tid % COUNTERS_SIZE].fetch_add(1, Ordering::SeqCst);
 
         let mut addr: Option<*mut c_void> = Some(1 as *mut c_void);
-        let ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
+        let ary: [*mut c_void; 11] = [0 as *mut c_void; 11];
 
         //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
 
@@ -120,8 +120,8 @@ unsafe impl GlobalAlloc for MyAllocator {
             if *in_trace.borrow() == 0 {
                 *in_trace.borrow_mut() = 1;
                 if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
-                    let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
-                    for i in 1..min(size as usize, 10) {
+                    let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 11);
+                    for i in 2..min(size as usize, 11) {
                         if ary[i] < 0x700000000000 as *mut c_void {
                             addr = Some(ary[i] as *mut c_void);
                             let hash = murmur64(ary[i] as u64) % (1 << 23);
