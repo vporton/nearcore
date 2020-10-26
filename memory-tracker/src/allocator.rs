@@ -112,67 +112,60 @@ unsafe impl GlobalAlloc for MyAllocator {
         MEM_CNT[tid % COUNTERS_SIZE].fetch_add(1, Ordering::SeqCst);
 
         let mut addr: Option<*mut c_void> = Some(1 as *mut c_void);
-        let ary: [*mut c_void; 11] = [0 as *mut c_void; 11];
+        let ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
 
-        //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
-
-        IN_TRACE.with(|in_trace| {
-            if *in_trace.borrow() == 0 {
-                *in_trace.borrow_mut() = 1;
-                if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
-                    let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 11);
-                    for i in 2..min(size as usize, 11) {
-                        if ary[i] < 0x700000000000 as *mut c_void {
-                            addr = Some(ary[i] as *mut c_void);
-                            let hash = murmur64(ary[i] as u64) % (1 << 23);
-                            if (SKIP_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
-                                continue;
-                            }
-                            if (CHECKED_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
-                                break;
-                            }
-                            let should_skip = skip_ptr(ary[i]);
-                            if should_skip {
-                                SKIP_PTR[(hash / 8) as usize] |= 1 << hash % 8;
-                                continue;
-                            }
-                            CHECKED_PTR[(hash / 8) as usize] |= 1 << hash % 8;
-
-                            TID2.with(|t| {
-                                let val = *t.borrow();
-                                let fname = format!("logs/{}", val);
-                                if let Ok(mut f) = File::open(fname) {
-                                    let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
-                                    let size2 =
-                                        libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256)
-                                            as usize;
-                                    for i in 0..size2 {
-                                        let addr = ary2[i];
-                                        f.write(format!("STACK_FOR {:?}", addr).as_bytes())
-                                            .unwrap();
-
-                                        backtrace::resolve(addr, |symbol| {
-                                            if let Some(name) = symbol.name() {
-                                                let name = name.as_str().unwrap_or("");
-
-                                                f.write(
-                                                    format!("STACK {:?} {:?}", addr, name)
-                                                        .as_bytes(),
-                                                )
-                                                .unwrap();
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-
+        if IN_TRACE.with(|in_trace| in_trace.borrow()) == 0 {
+            IN_TRACE.with(|in_trace| *in_trace.borrow_mut() = 1);
+            if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
+                let size = libc::backtkrace(ary.as_ptr() as *mut *mut c_void, 10);
+                for i in 1..min(size as usize, 10) {
+                    if ary[i] < 0x700000000000 as *mut c_void {
+                        addr = Some(ary[i] as *mut c_void);
+                        let hash = murmur64(ary[i] as u64) % (1 << 23);
+                        if (SKIP_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
+                            continue;
+                        }
+                        if (CHECKED_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
                             break;
                         }
+                        let should_skip = skip_ptr(ary[i]);
+                        if should_skip {
+                            SKIP_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+                            continue;
+                        }
+                        CHECKED_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+
+                        TID2.with(|t| {
+                            let val = *t.borrow();
+                            let fname = format!("logs/{}", val);
+                            if let Ok(mut f) = File::open(fname) {
+                                let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
+                                let size2 = libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256)
+                                    as usize;
+                                for i in 0..size2 {
+                                    let addr = ary2[i];
+                                    f.write(format!("STACK_FOR {:?}", addr).as_bytes()).unwrap();
+
+                                    backtrace::resolve(addr, |symbol| {
+                                        if let Some(name) = symbol.name() {
+                                            let name = name.as_str().unwrap_or("");
+
+                                            f.write(
+                                                format!("STACK {:?} {:?}", addr, name).as_bytes(),
+                                            )
+                                            .unwrap();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+
+                        break;
                     }
                 }
-                *in_trace.borrow_mut() = 0;
             }
-        });
+            IN_TRACE.with(|in_trace| *in_trace.borrow_mut() = 0);
+        }
 
         /*
         IN_TRACE.with(|in_trace| {
