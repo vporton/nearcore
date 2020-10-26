@@ -4,6 +4,9 @@ use log::info;
 use rand::Rng;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
+use std::cmp::min;
+use std::fs::File;
+use std::io::Write;
 use std::os::raw::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -98,7 +101,6 @@ fn skip_ptr(addr: *mut c_void) -> bool {
 
 unsafe impl GlobalAlloc for MyAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-
         SANITY.fetch_add(1, Ordering::SeqCst);
 
         let new_layout = Layout::from_size_align(layout.size() + EXTRA, layout.align()).unwrap();
@@ -114,29 +116,62 @@ unsafe impl GlobalAlloc for MyAllocator {
 
         //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
 
-        if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
-            libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
-            for i in 1..10 {
-                if ary[i] < 0x700000000000 as *mut c_void {
-                    addr = Some(ary[i] as *mut c_void);
-                    let hash = murmur64(ary[i] as u64) % (1 << 23);
-                    if (SKIP_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
-                        continue;
-                    }
-                    if (CHECKED_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
-                        break;
-                    }
-                    let should_skip = skip_ptr(ary[i]);
-                    if should_skip {
-                        SKIP_PTR[(hash / 8) as usize] |= 1 << hash % 8;
-                        continue;
-                    }
-                    CHECKED_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+        IN_TRACE.with(|in_trace| {
+            if *in_trace.borrow() != 0 {
+                if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
+                    let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
+                    for i in 1..min(size as usize, 10) {
+                        if ary[i] < 0x700000000000 as *mut c_void {
+                            addr = Some(ary[i] as *mut c_void);
+                            let hash = murmur64(ary[i] as u64) % (1 << 23);
+                            if (SKIP_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
+                                continue;
+                            }
+                            if (CHECKED_PTR[(hash / 8) as usize] >> hash % 8) & 1 == 1 {
+                                break;
+                            }
+                            let should_skip = skip_ptr(ary[i]);
+                            if should_skip {
+                                SKIP_PTR[(hash / 8) as usize] |= 1 << hash % 8;
+                                continue;
+                            }
+                            CHECKED_PTR[(hash / 8) as usize] |= 1 << hash % 8;
 
-                    break;
+                            TID2.with(|t| {
+                                let val = *t.borrow();
+                                let fname = format!("logs/{}", val);
+                                if let Ok(mut f) = File::open(fname) {
+                                    let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
+                                    let size2 =
+                                        libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256)
+                                            as usize;
+                                    for i in 0..size2 {
+                                        let addr = ary2[i];
+                                        f.write(format!("STACK_FOR {:?}", addr).as_bytes())
+                                            .unwrap();
+
+                                        backtrace::resolve(addr, |symbol| {
+                                            if let Some(name) = symbol.name() {
+                                                let name = name.as_str().unwrap_or("");
+
+                                                f.write(
+                                                    format!("STACK {:?} {:?}", addr, name)
+                                                        .as_bytes(),
+                                                )
+                                                .unwrap();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
+                            break;
+                        }
+                    }
                 }
             }
-        }
+            *in_trace.borrow_mut() = 0;
+        });
 
         /*
         IN_TRACE.with(|in_trace| {
@@ -219,20 +254,22 @@ unsafe impl GlobalAlloc for MyAllocator {
 
         ADDR = addr;
 
-        *(res.offset(layout.size() as isize) as *mut u64) = MAGIC as u64;
-        *(res.offset(layout.size() as isize) as *mut u64).offset(1) = layout.size() as u64;
-        *(res.offset(layout.size() as isize) as *mut u64).offset(2) = tid as u64;
-        *(res.offset(layout.size() as isize) as *mut *mut c_void).offset(3) =
-            addr.unwrap_or(0 as *mut c_void);
+        *(res as *mut u64) = MAGIC as u64;
+        *(res as *mut u64).offset(1) = layout.size() as u64;
+        *(res as *mut u64).offset(2) = tid as u64;
+        *(res as *mut *mut c_void).offset(3) = addr.unwrap_or(0 as *mut c_void);
         SANITY.fetch_sub(1, Ordering::SeqCst);
-        res
+        res.offset(32)
     }
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+
+    unsafe fn dealloc(&self, mut ptr: *mut u8, layout: Layout) {
         SANITY.fetch_add(1, Ordering::SeqCst);
         let new_layout = Layout::from_size_align(layout.size() + EXTRA, layout.align()).unwrap();
 
-        *(ptr.offset(layout.size() as isize) as *mut u64) = (MAGIC + 0x10) as u64;
-        let tid: usize = *(ptr.offset(layout.size() as isize) as *mut u64).offset(2) as usize;
+        ptr = ptr.offset(-32);
+
+        *(ptr as *mut u64) = (MAGIC + 0x10) as u64;
+        let tid: usize = *(ptr as *mut u64).offset(2) as usize;
 
         MEM_SIZE[tid % COUNTERS_SIZE].fetch_sub(layout.size(), Ordering::SeqCst);
         MEM_CNT[tid % COUNTERS_SIZE].fetch_sub(1, Ordering::SeqCst);
