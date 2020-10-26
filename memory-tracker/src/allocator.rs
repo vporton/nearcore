@@ -5,7 +5,7 @@ use rand::Rng;
 use std::alloc::{GlobalAlloc, Layout};
 use std::cell::RefCell;
 use std::cmp::min;
-use std::fs::{File, OpenOptions};
+use std::fs::OpenOptions;
 use std::io::Write;
 use std::os::raw::c_void;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -137,26 +137,25 @@ unsafe impl GlobalAlloc for MyAllocator {
 
                         let tid = get_tid();
 
-                        let fname = format!("logs/{}", tid);
+                        let fname = format!("/tmp/logs/{}", tid);
 
-                        let mut f =
-                            OpenOptions::new().write(true).append(true).open(fname).unwrap();
+                        if let Ok(mut f) = OpenOptions::new().write(true).append(true).open(fname) {
+                            let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
+                            let size2 =
+                                libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256) as usize;
+                            for i in 0..size2 {
+                                let addr = ary2[i];
+                                f.write(format!("STACK_FOR {:?}", addr).as_bytes()).unwrap();
 
-                        let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
-                        let size2 =
-                            libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256) as usize;
-                        for i in 0..size2 {
-                            let addr = ary2[i];
-                            f.write(format!("STACK_FOR {:?}", addr).as_bytes()).unwrap();
+                                backtrace::resolve(addr, |symbol| {
+                                    if let Some(name) = symbol.name() {
+                                        let name = name.as_str().unwrap_or("");
 
-                            backtrace::resolve(addr, |symbol| {
-                                if let Some(name) = symbol.name() {
-                                    let name = name.as_str().unwrap_or("");
-
-                                    f.write(format!("STACK {:?} {:?}", addr, name).as_bytes())
-                                        .unwrap();
-                                }
-                            });
+                                        f.write(format!("STACK {:?} {:?}", addr, name).as_bytes())
+                                            .unwrap();
+                                    }
+                                });
+                            }
                         }
                         break;
                     }
