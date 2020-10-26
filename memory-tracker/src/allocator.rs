@@ -117,7 +117,8 @@ unsafe impl GlobalAlloc for MyAllocator {
         //backtrace_symbols(ary.as_ptr() as *mut *mut c_void, 10);
 
         IN_TRACE.with(|in_trace| {
-            if *in_trace.borrow() != 0 {
+            if *in_trace.borrow() == 0 {
+                *in_trace.borrow_mut() = 1;
                 if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
                     let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
                     for i in 1..min(size as usize, 10) {
@@ -169,8 +170,8 @@ unsafe impl GlobalAlloc for MyAllocator {
                         }
                     }
                 }
+                *in_trace.borrow_mut() = 0;
             }
-            *in_trace.borrow_mut() = 0;
         });
 
         /*
