@@ -148,19 +148,20 @@ unsafe impl GlobalAlloc for MyAllocator {
                         if let Ok(mut f) =
                             OpenOptions::new().create(true).write(true).append(true).open(fname)
                         {
+                            f.write(format!("STACK_FOR {:?}\n", addr).as_bytes()).unwrap();
                             let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
                             let size2 =
                                 libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256) as usize;
                             for i in 0..size2 {
                                 let addr2 = ary2[i];
-                                f.write(format!("STACK_FOR {:?}\n", addr2).as_bytes()).unwrap();
 
                                 backtrace::resolve(addr2, |symbol| {
                                     if let Some(name) = symbol.name() {
                                         let name = name.as_str().unwrap_or("");
 
                                         f.write(
-                                            format!("STACK {:?} {:?}\n", addr2, name).as_bytes(),
+                                            format!("STACK {:?} {:?} {:?}\n", i, addr2, name)
+                                                .as_bytes(),
                                         )
                                         .unwrap();
                                     }
