@@ -139,7 +139,9 @@ unsafe impl GlobalAlloc for MyAllocator {
 
                         let fname = format!("/tmp/logs/{}", tid);
 
-                        if let Ok(mut f) = OpenOptions::new().write(true).append(true).open(fname) {
+                        if let Ok(mut f) =
+                            OpenOptions::new().create(true).write(true).append(true).open(fname)
+                        {
                             let ary2: [*mut c_void; 256] = [0 as *mut c_void; 256];
                             let size2 =
                                 libc::backtrace(ary2.as_ptr() as *mut *mut c_void, 256) as usize;
