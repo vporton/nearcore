@@ -114,10 +114,10 @@ unsafe impl GlobalAlloc for MyAllocator {
         let mut addr: Option<*mut c_void> = Some(1 as *mut c_void);
         let ary: [*mut c_void; 10] = [0 as *mut c_void; 10];
 
-        if IN_TRACE.with(|in_trace| in_trace.borrow()) == 0 {
+        if IN_TRACE.with(|in_trace| *in_trace.borrow()) == 0 {
             IN_TRACE.with(|in_trace| *in_trace.borrow_mut() = 1);
             if layout.size() >= 1024 || rand::thread_rng().gen_range(0, 100) == 0 {
-                let size = libc::backtkrace(ary.as_ptr() as *mut *mut c_void, 10);
+                let size = libc::backtrace(ary.as_ptr() as *mut *mut c_void, 10);
                 for i in 1..min(size as usize, 10) {
                     if ary[i] < 0x700000000000 as *mut c_void {
                         addr = Some(ary[i] as *mut c_void);
