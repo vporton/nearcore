@@ -295,17 +295,14 @@ pub fn ecrecover_address(hash: &RawHash, signature: &[u8; 65]) -> Address {
     use sha3::Digest;
 
     let hash = secp256k1::Message::parse(&H256::from_slice(hash).0);
-    let v = &signature[0];
+    let v = signature[64];
     let bit = match v {
-        27..=30 => v - 27,
-        _ => {
-            // ??
-            return Address::zero();
-        }
+        0..=26 => v,
+        _ => v - 27,
     };
 
     let mut sig = [0u8; 64];
-    sig.copy_from_slice(&signature[1..]);
+    sig.copy_from_slice(&signature[0..64]);
     let s = secp256k1::Signature::parse(&sig);
 
     if let Ok(rec_id) = secp256k1::RecoveryId::parse(bit) {
