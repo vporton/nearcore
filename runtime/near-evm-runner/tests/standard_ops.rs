@@ -8,8 +8,9 @@ use ethereum_types::{Address, H256, U256};
 use near_crypto::{InMemorySigner, KeyType};
 use near_evm_runner::types::{TransferArgs, WithdrawArgs};
 use near_evm_runner::utils::{
-    address_from_arr, address_to_vec, encode_call_function_args, encode_view_call_function_args,
-    near_account_id_to_evm_address, near_erc721_domain, parse_meta_call, u256_to_arr,
+    address_from_arr, address_to_vec, ecrecover_address, encode_call_function_args,
+    encode_view_call_function_args, near_account_id_to_evm_address, near_erc721_domain,
+    parse_meta_call, u256_to_arr,
 };
 use near_runtime_fees::RuntimeFeesConfig;
 use near_vm_errors::{EvmError, VMLogicError};
@@ -283,7 +284,6 @@ fn test_meta_call() {
 }
 
 #[test]
-#[ignore]
 fn test_meta_call_sig_recover() {
     let meta_tx = [
         // signature: 65 bytes
@@ -305,4 +305,21 @@ fn test_meta_call_sig_recover() {
     let domain_separator = near_erc721_domain(U256::from(CHAIN_ID));
     let result = parse_meta_call(&domain_separator, &"evm".to_string(), meta_tx).unwrap();
     assert_eq!(result.sender.to_hex(), "2941022347348828A24a5ff33c775D67691681e9");
+}
+
+#[test]
+fn test_ecrecover() {
+    let msg2 =
+        hex::decode("c1719db355fee5122b0625b9274ee6d385ced2f2a530d0de2edb77b541d52c3e").unwrap();
+    let mut msg = [0u8; 32];
+    msg.copy_from_slice(&msg2[..32]);
+
+    let signature2 = hex::decode("c710c068462547d3d3c452a4abc14fd91f152357c21e667ad6ac67130e76e9a1501491aa4e9d35846bff49d9c77e913217031fdc44f1dc36271a4b7d637763d01b").unwrap();
+    let mut signature: [u8; 65] = [0; 65];
+    signature.copy_from_slice(&signature2[..65]);
+
+    assert_eq!(
+        ecrecover_address(&msg, &signature).0.to_vec(),
+        hex::decode("3b748cf099f8068951f87331d1970bcafda8a4db").unwrap()
+    );
 }
