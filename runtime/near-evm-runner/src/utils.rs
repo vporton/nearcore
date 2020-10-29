@@ -256,7 +256,7 @@ pub fn parse_meta_call(
     }
     let mut signature: [u8; 65] = [0; 65];
     // Signatures coming from outside are srv but ecrecover takes vsr, so move last byte to first position.
-    signature[0] = args[64] + 27;
+    signature[0] = args[64];
     signature[1..].copy_from_slice(&args[..64]);
     let nonce = U256::from_big_endian(&args[65..97]);
     let fee_amount = U256::from_big_endian(&args[97..129]);
@@ -295,16 +295,15 @@ pub fn ecrecover_address(hash: &RawHash, signature: &[u8; 65]) -> Address {
     use sha3::Digest;
 
     let hash = secp256k1::Message::parse(&H256::from_slice(hash).0);
-    let v = signature[64];
+    let v = signature[0];
     let bit = match v {
         0..=26 => v,
         _ => v - 27,
     };
 
     let mut sig = [0u8; 64];
-    sig.copy_from_slice(&signature[0..64]);
+    sig.copy_from_slice(&signature[1..65]);
     let s = secp256k1::Signature::parse(&sig);
-
     if let Ok(rec_id) = secp256k1::RecoveryId::parse(bit) {
         if let Ok(p) = secp256k1::recover(&hash, &s, &rec_id) {
             // recover returns the 65-byte key, but addresses come from the raw 64-byte key

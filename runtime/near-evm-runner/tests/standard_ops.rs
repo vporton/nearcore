@@ -304,7 +304,7 @@ fn test_meta_call_sig_recover() {
     ].concat();
     let domain_separator = near_erc721_domain(U256::from(CHAIN_ID));
     let result = parse_meta_call(&domain_separator, &"evm".to_string(), meta_tx).unwrap();
-    assert_eq!(result.sender.to_hex(), "2941022347348828A24a5ff33c775D67691681e9");
+    assert_eq!(result.sender.to_hex(), "83017c23c7fdb4f85e10bbe1a8d29230a9183f4c");
 }
 
 #[test]
@@ -316,7 +316,8 @@ fn test_ecrecover() {
 
     let signature2 = hex::decode("c710c068462547d3d3c452a4abc14fd91f152357c21e667ad6ac67130e76e9a1501491aa4e9d35846bff49d9c77e913217031fdc44f1dc36271a4b7d637763d01b").unwrap();
     let mut signature: [u8; 65] = [0; 65];
-    signature.copy_from_slice(&signature2[..65]);
+    signature[0] = signature2[64];
+    signature[1..].copy_from_slice(&signature2[..64]);
 
     assert_eq!(
         ecrecover_address(&msg, &signature).0.to_vec(),

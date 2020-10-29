@@ -8,7 +8,7 @@ use near_vm_logic::mocks::mock_external::MockedExternal;
 use near_vm_logic::types::Balance;
 use near_vm_logic::VMConfig;
 
-pub const CHAIN_ID: u128 = 0x99;
+pub const CHAIN_ID: u128 = 1313161555;
 
 pub fn accounts(num: usize) -> String {
     ["evm", "alice", "bob", "chad"][num].to_string()
