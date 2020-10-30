@@ -191,9 +191,15 @@ pub fn near_erc721_domain(chain_id: U256) -> RawU256 {
     bytes.extend_from_slice(
         &keccak("EIP712Domain(string name,string version,uint256 chainId)".as_bytes()).as_bytes(),
     );
-    bytes.extend_from_slice(b"NEAR");
-    bytes.extend_from_slice(&[0x01]);
+    println!("near_erc721_domain before NEAR {:?}", hex::encode(&bytes));
+    let near = b"NEAR";
+    let near: RawU256 = keccak(&near).into();
+    bytes.extend_from_slice(&near);
+    let version = b"1";
+    let version: RawU256 = keccak(&version).into();
+    bytes.extend_from_slice(&version);
     bytes.extend_from_slice(&u256_to_arr(&chain_id));
+    println!("near_erc721_domain before hash {:?}", hex::encode(&bytes));
     keccak(&bytes).into()
 }
 
@@ -234,6 +240,7 @@ pub fn prepare_meta_call_args(
     bytes.extend_from_slice(&[0x19, 0x01]);
     bytes.extend_from_slice(domain_separator);
     bytes.extend_from_slice(&message);
+    println!("bytes {:?}", hex::encode(&bytes));
     keccak(&bytes).into()
 }
 
@@ -280,6 +287,9 @@ pub fn parse_meta_call(
         &method_name,
         args,
     );
+    println!("msg for ecrecover: {:?}", hex::encode(msg));
+    println!("sig for ecrecover: {:?}", hex::encode(&signature.to_vec()));
+
     let sender = ecrecover_address(&msg, &signature);
     if sender == Address::zero() {
         return Err(VMLogicError::EvmError(EvmError::InvalidEcRecoverSignature));

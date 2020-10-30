@@ -285,26 +285,30 @@ fn test_meta_call() {
 
 #[test]
 fn test_meta_call_sig_recover() {
-    let meta_tx = [
-        // signature: 65 bytes
-        hex::decode("1cb6f28f29524cf3ae5ce49f364b5ad798af5dd8ec3563744dc62792735ce5e222285df1e91c416e430d0a38ea3b51d6677e337e1b0684d7618f5a00a26a2ee21c").unwrap(),
-        // nonce: 14
-        u256_to_arr(&U256::from(14)).to_vec(),
-        // fee amount: 6
-        u256_to_arr(&U256::from(6)).to_vec(),
-        // fee token: 0x0
-        vec![0; 20],
-        // contract: address,
-        hex::decode("Ed2a1b3Fa739DAbBf8c07a059dE1333D20e8b482").unwrap(),
-        // contract method: length 1 byte + bytes for the name.
-        vec![14],
-        b"adopt(uint256)".to_vec(),
-        // arguments
+    let (mut fake_external, test_addr, vm_config, fees_config) = setup_and_deploy_test();
+    let signer = InMemorySigner::from_seed("doesnt", KeyType::SECP256K1, "a");
+    let mut context =
+        create_context(&mut fake_external, &vm_config, &fees_config, accounts(1), 100);
+    let meta_tx = encode_meta_call_function_args(
+        &signer,
+        CHAIN_ID,
+        U256::from(14),
+        U256::from(6),
+        Address::from_slice(&[0u8; 20]),
+        test_addr,
+        "adopt(uint256)",
         u256_to_arr(&U256::from(9)).to_vec(),
-    ].concat();
+    );
+    println!("meta_tx: {:?}", meta_tx);
+    println!("contract addr: {:?}", test_addr);
+    let signer_addr = public_key_to_address(signer.public_key);
+    println!("signer private key: {:?}", signer.secret_key);
+    println!("signer address: {:?}", signer_addr);
+
     let domain_separator = near_erc721_domain(U256::from(CHAIN_ID));
     let result = parse_meta_call(&domain_separator, &"evm".to_string(), meta_tx).unwrap();
-    assert_eq!(result.sender.to_hex(), "83017c23c7fdb4f85e10bbe1a8d29230a9183f4c");
+    println!("{:?}", result);
+    assert_eq!(result.sender, signer_addr);
 }
 
 #[test]
