@@ -8,6 +8,28 @@ use near_primitives::version::ProtocolVersion;
 use near_runtime_fees::RuntimeFeesConfig;
 use near_vm_logic::VMConfig;
 use std::sync::Arc;
+#[cfg(feature = "adversarial")]
+use chrono;
+
+// Information for debugging.
+#[cfg(feature = "adversarial")]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(default)]
+pub struct DebugState {
+    pub use_fake_time: xhnjkhjkbool,
+    fake_time: chrono::DateTime<chrono::Utc>,
+}
+
+#[cfg(feature = "adversarial")]
+impl DebugState {
+    pub fn get_time(&self) -> chrono::DateTime<chrono::Utc>{
+        if self.use_fake_time {
+            self.fake_time
+        } else {
+            chrono::Utc::now()
+        }
+    }
+}
 
 /// The structure that holds the parameters of the runtime, mostly economics.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

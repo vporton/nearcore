@@ -2749,6 +2749,7 @@ dependencies = [
 name = "near-runtime-configs"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "near-primitives",
  "near-runtime-fees",
  "near-vm-logic",
