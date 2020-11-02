@@ -13,10 +13,10 @@ use chrono;
 
 // Information for debugging.
 #[cfg(feature = "adversarial")]
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
-#[serde(default)]
+// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+// #[serde(default)]
 pub struct DebugState {
-    pub use_fake_time: xhnjkhjkbool,
+    pub use_fake_time: bool,
     fake_time: chrono::DateTime<chrono::Utc>,
 }
 
